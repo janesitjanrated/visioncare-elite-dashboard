@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Link } from 'react-router-dom';
 import {
   SidebarProvider,
   SidebarTrigger,
@@ -9,7 +9,8 @@ import { AppSidebar } from '@/components/AppSidebar';
 import { 
   Search, 
   Bell, 
-  AlertTriangle
+  AlertTriangle,
+  Menu
 } from 'lucide-react';
 
 const Layout = () => {
@@ -58,6 +59,13 @@ const Layout = () => {
                 </div>
                 
                 <div className="flex items-center space-x-3">
+                  <Link 
+                    to="/main-menu"
+                    className="flex items-center gap-2 px-3 py-2 bg-teal-600 text-white rounded-xl hover:bg-teal-700 transition-colors font-semibold text-sm"
+                  >
+                    <Menu className="h-4 w-4" />
+                    Main Menu
+                  </Link>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <input 
