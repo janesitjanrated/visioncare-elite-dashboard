@@ -42,7 +42,10 @@ import {
   Archive,
   CreditCard,
   Receipt,
-  Calculator
+  Calculator,
+  Package,
+  AlertTriangle,
+  Bell
 } from 'lucide-react';
 
 // Define menu items for each system
