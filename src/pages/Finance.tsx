@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { 
   DollarSign, 
@@ -23,10 +22,11 @@ import TaxInvoiceSection from '@/components/finance/TaxInvoiceSection';
 import FinanceAlertSystem from '@/components/finance/FinanceAlertSystem';
 import FinancialStatements from '@/components/finance/FinancialStatements';
 import CreateTransactionForm from '@/components/finance/CreateTransactionForm';
+import { useLocation } from 'react-router-dom';
 
 const Finance = () => {
-  const [activeTab, setActiveTab] = useState('overview');
   const [showCreateTransaction, setShowCreateTransaction] = useState(false);
+  const location = useLocation();
 
   // Mock financial summary data
   const financialSummary = {
@@ -45,6 +45,26 @@ const Finance = () => {
       style: 'currency',
       currency: 'THB'
     }).format(amount);
+  };
+
+  // Determine which section to show based on route
+  const renderContent = () => {
+    switch (location.pathname) {
+      case '/finance/sales':
+        return <SalesRevenueSection />;
+      case '/finance/inventory':
+        return <InventoryCostSection />;
+      case '/finance/customers':
+        return <CustomerDataSection />;
+      case '/finance/expenses':
+        return <ExpenseManagementSection />;
+      case '/finance/tax':
+        return <TaxInvoiceSection />;
+      case '/finance/alerts':
+        return <FinanceAlertSystem />;
+      default:
+        return <FinancialStatements />;
+    }
   };
 
   return (
@@ -121,46 +141,10 @@ const Finance = () => {
         </Card>
       </div>
 
-      {/* Main Content Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="overview">ภาพรวม</TabsTrigger>
-          <TabsTrigger value="sales">ยอดขาย</TabsTrigger>
-          <TabsTrigger value="inventory">สต็อก</TabsTrigger>
-          <TabsTrigger value="customers">ลูกค้า</TabsTrigger>
-          <TabsTrigger value="expenses">ค่าใช้จ่าย</TabsTrigger>
-          <TabsTrigger value="tax">ภาษี</TabsTrigger>
-          <TabsTrigger value="alerts">แจ้งเตือน</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="overview" className="space-y-6">
-          <FinancialStatements />
-        </TabsContent>
-
-        <TabsContent value="sales" className="space-y-6">
-          <SalesRevenueSection />
-        </TabsContent>
-
-        <TabsContent value="inventory" className="space-y-6">
-          <InventoryCostSection />
-        </TabsContent>
-
-        <TabsContent value="customers" className="space-y-6">
-          <CustomerDataSection />
-        </TabsContent>
-
-        <TabsContent value="expenses" className="space-y-6">
-          <ExpenseManagementSection />
-        </TabsContent>
-
-        <TabsContent value="tax" className="space-y-6">
-          <TaxInvoiceSection />
-        </TabsContent>
-
-        <TabsContent value="alerts" className="space-y-6">
-          <FinanceAlertSystem />
-        </TabsContent>
-      </Tabs>
+      {/* Dynamic Content based on sidebar selection */}
+      <div className="space-y-6">
+        {renderContent()}
+      </div>
 
       {/* Create Transaction Modal */}
       {showCreateTransaction && (

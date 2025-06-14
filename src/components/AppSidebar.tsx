@@ -25,64 +25,118 @@ import {
   DollarSign,
   Target,
   PieChart,
-  Shield
+  Shield,
+  CalendarCheck,
+  UserPlus,
+  Clock,
+  Building,
+  UserCheck,
+  FileText,
+  TrendingUp,
+  MessageSquare,
+  Star,
+  MessageCircle,
+  Settings,
+  Plus,
+  Search,
+  Archive,
+  CreditCard,
+  Receipt,
+  Calculator
 } from 'lucide-react';
 
-const navigationItems = [
-  { 
-    icon: BarChart3, 
-    label: 'Analytics Dashboard', 
-    path: '/',
-    badge: null 
-  },
-  { 
-    icon: Users, 
-    label: 'Patient Intelligence', 
-    path: '/patients',
-    badge: '2,847' 
-  },
-  { 
-    icon: Calendar, 
-    label: 'Smart Scheduling', 
-    path: '/scheduling',
-    badge: 'Live' 
-  },
-  { 
-    icon: Stethoscope, 
-    label: 'Doctor Performance', 
-    path: '/doctors',
-    badge: null 
-  },
-  { 
-    icon: Brain, 
-    label: 'Treatment Outcomes', 
-    path: '/treatments',
-    badge: null 
-  },
-  { 
-    icon: DollarSign, 
-    label: 'Revenue Analytics', 
-    path: '/revenue',
-    badge: null 
-  },
-  { 
-    icon: Target, 
-    label: 'Quality Metrics', 
-    path: '/quality',
-    badge: null 
-  },
-  { 
-    icon: PieChart, 
-    label: 'Business Reports', 
-    path: '/reports',
-    badge: null 
-  }
-];
+// Define menu items for each system
+const systemMenus = {
+  appointment: [
+    { icon: CalendarCheck, label: 'รายการนัดหมาย', path: '/appointments/list' },
+    { icon: Plus, label: 'สร้างนัดหมาย', path: '/appointments/create' },
+    { icon: Calendar, label: 'ปฏิทินแพทย์', path: '/appointments/calendar' },
+    { icon: Clock, label: 'รายการรอ', path: '/appointments/waiting' },
+    { icon: UserCheck, label: 'เช็คอิน', path: '/appointments/checkin' },
+    { icon: BarChart3, label: 'รายงาน', path: '/appointments/reports' }
+  ],
+  hr: [
+    { icon: Users, label: 'รายชื่อพนักงาน', path: '/hr-dashboard/employees' },
+    { icon: UserPlus, label: 'เพิ่มพนักงาน', path: '/hr-dashboard/add-employee' },
+    { icon: Calendar, label: 'ตารางเวร', path: '/hr-dashboard/schedule' },
+    { icon: FileText, label: 'ใบลา', path: '/hr-dashboard/leave' },
+    { icon: TrendingUp, label: 'ประเมินผล', path: '/hr-dashboard/performance' },
+    { icon: DollarSign, label: 'เงินเดือน', path: '/hr-dashboard/payroll' }
+  ],
+  branch: [
+    { icon: Building, label: 'ข้อมูลสาขา', path: '/branch/info' },
+    { icon: BarChart3, label: 'ผลงานสาขา', path: '/branch/performance' },
+    { icon: Users, label: 'พนักงานสาขา', path: '/branch/staff' },
+    { icon: DollarSign, label: 'รายได้สาขา', path: '/branch/revenue' },
+    { icon: Target, label: 'เป้าหมาย', path: '/branch/targets' },
+    { icon: Settings, label: 'ตั้งค่าสาขา', path: '/branch/settings' }
+  ],
+  feedback: [
+    { icon: MessageSquare, label: 'ความคิดเห็นทั้งหมด', path: '/feedback/all' },
+    { icon: Star, label: 'คะแนนรีวิว', path: '/feedback/ratings' },
+    { icon: MessageCircle, label: 'ข้อเสนอแนะ', path: '/feedback/suggestions' },
+    { icon: BarChart3, label: 'สถิติความพึงพอใจ', path: '/feedback/analytics' },
+    { icon: TrendingUp, label: 'รายงานคุณภาพ', path: '/feedback/quality' },
+    { icon: Archive, label: 'ประวัติการตอบกลับ', path: '/feedback/history' }
+  ],
+  finance: [
+    { icon: BarChart3, label: 'ภาพรวม', path: '/finance' },
+    { icon: DollarSign, label: 'ยอดขาย', path: '/finance/sales' },
+    { icon: Package, label: 'สต็อก', path: '/finance/inventory' },
+    { icon: Users, label: 'ลูกค้า', path: '/finance/customers' },
+    { icon: Receipt, label: 'ค่าใช้จ่าย', path: '/finance/expenses' },
+    { icon: Calculator, label: 'ภาษี', path: '/finance/tax' },
+    { icon: AlertTriangle, label: 'แจ้งเตือน', path: '/finance/alerts' }
+  ],
+  chat: [
+    { icon: MessageSquare, label: 'แชททั้งหมด', path: '/alerts/all' },
+    { icon: Users, label: 'กลุ่มแชท', path: '/alerts/groups' },
+    { icon: Search, label: 'ค้นหาข้อความ', path: '/alerts/search' },
+    { icon: Archive, label: 'ข้อความที่เก็บ', path: '/alerts/archived' },
+    { icon: Settings, label: 'ตั้งค่าแชท', path: '/alerts/settings' },
+    { icon: Bell, label: 'การแจ้งเตือน', path: '/alerts/notifications' }
+  ],
+  dashboard: [
+    { icon: BarChart3, label: 'Analytics Dashboard', path: '/' },
+    { icon: Users, label: 'Patient Intelligence', path: '/patients' },
+    { icon: Calendar, label: 'Smart Scheduling', path: '/scheduling' },
+    { icon: Stethoscope, label: 'Doctor Performance', path: '/doctors' },
+    { icon: Brain, label: 'Treatment Outcomes', path: '/treatments' },
+    { icon: DollarSign, label: 'Revenue Analytics', path: '/revenue' },
+    { icon: Target, label: 'Quality Metrics', path: '/quality' },
+    { icon: PieChart, label: 'Business Reports', path: '/reports' }
+  ]
+};
+
+const systemTitles = {
+  appointment: 'ระบบนัดหมาย',
+  hr: 'ระบบ HR/OD',
+  branch: 'ระบบสาขา',
+  feedback: 'ระบบ Feedback',
+  finance: 'ระบบการเงิน',
+  chat: 'ระบบ Chat',
+  dashboard: 'Dashboard ผู้บริหาร'
+};
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
   const isCollapsed = state === 'collapsed';
+
+  // Determine current system based on route
+  const getCurrentSystem = () => {
+    if (location.pathname.startsWith('/appointments')) return 'appointment';
+    if (location.pathname.startsWith('/hr-dashboard')) return 'hr';
+    if (location.pathname.startsWith('/branch')) return 'branch';
+    if (location.pathname.startsWith('/feedback')) return 'feedback';
+    if (location.pathname.startsWith('/finance')) return 'finance';
+    if (location.pathname.startsWith('/alerts')) return 'chat';
+    return 'dashboard';
+  };
+
+  const currentSystem = getCurrentSystem();
+  const currentMenuItems = systemMenus[currentSystem];
+  const systemTitle = systemTitles[currentSystem];
 
   const getNavClassName = (path: string) => {
     const isActive = location.pathname === path;
@@ -108,10 +162,10 @@ export function AppSidebar() {
           </div>
           {!isCollapsed && (
             <div>
-              <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-700 to-teal-700 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-emerald-700 to-teal-700 bg-clip-text text-transparent">
                 VisionCare Elite
               </h1>
-              <p className="text-sm text-gray-600 font-medium">Advanced Eye Care Center</p>
+              <p className="text-sm text-emerald-600 font-medium">{systemTitle}</p>
             </div>
           )}
         </div>
@@ -121,11 +175,11 @@ export function AppSidebar() {
       <SidebarContent className="p-6">
         <SidebarGroup>
           <SidebarGroupLabel className="text-gray-500 font-semibold text-xs uppercase tracking-wide mb-4">
-            {!isCollapsed ? 'Main Navigation' : ''}
+            {!isCollapsed ? 'เมนูหลัก' : ''}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu className="space-y-3">
-              {navigationItems.map((item) => {
+              {currentMenuItems.map((item) => {
                 const isActive = location.pathname === item.path;
                 
                 return (
@@ -140,15 +194,6 @@ export function AppSidebar() {
                             <span className="font-semibold text-sm">{item.label}</span>
                           )}
                         </div>
-                        {!isCollapsed && item.badge && (
-                          <span className={`px-2 py-1 text-xs rounded-full font-semibold ${
-                            isActive 
-                              ? 'bg-white/20 text-white' 
-                              : 'bg-emerald-100 text-emerald-700'
-                          }`}>
-                            {item.badge}
-                          </span>
-                        )}
                       </NavLink>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

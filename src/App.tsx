@@ -9,6 +9,8 @@ import Layout from "./components/Layout";
 import Index from "./pages/Index";
 import MainMenu from "./pages/MainMenu";
 import Finance from "./pages/Finance";
+import Appointments from "./pages/Appointments";
+import HRDashboard from "./pages/HRDashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,11 +32,23 @@ const App = () => (
               <Route path="revenue" element={<div className="p-8 text-center text-gray-600">Revenue Analytics Page - Coming Soon</div>} />
               <Route path="quality" element={<div className="p-8 text-center text-gray-600">Quality Metrics Page - Coming Soon</div>} />
               <Route path="reports" element={<div className="p-8 text-center text-gray-600">Business Reports Page - Coming Soon</div>} />
-              <Route path="appointments" element={<div className="p-8 text-center text-gray-600">Appointments Page - Coming Soon</div>} />
-              <Route path="hr-dashboard" element={<div className="p-8 text-center text-gray-600">HR Dashboard Page - Coming Soon</div>} />
+              
+              {/* Appointment System Routes */}
+              <Route path="appointments/*" element={<Appointments />} />
+              
+              {/* HR/OD System Routes */}
+              <Route path="hr-dashboard/*" element={<HRDashboard />} />
+              
+              {/* Branch System Routes */}
               <Route path="branch" element={<div className="p-8 text-center text-gray-600">Branch Management Page - Coming Soon</div>} />
+              
+              {/* Feedback System Routes */}
               <Route path="feedback" element={<div className="p-8 text-center text-gray-600">Feedback Page - Coming Soon</div>} />
-              <Route path="finance" element={<Finance />} />
+              
+              {/* Finance System Routes */}
+              <Route path="finance/*" element={<Finance />} />
+              
+              {/* Chat System Routes */}
               <Route path="alerts" element={<div className="p-8 text-center text-gray-600">Chat System Page - Coming Soon</div>} />
             </Route>
             <Route path="/main-menu" element={<MainMenu />} />
