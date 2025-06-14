@@ -11,6 +11,9 @@ import MainMenu from "./pages/MainMenu";
 import Finance from "./pages/Finance";
 import Appointments from "./pages/Appointments";
 import HRDashboard from "./pages/HRDashboard";
+import Branch from "./pages/Branch";
+import Feedback from "./pages/Feedback";
+import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,16 +43,16 @@ const App = () => (
               <Route path="hr-dashboard/*" element={<HRDashboard />} />
               
               {/* Branch System Routes */}
-              <Route path="branch" element={<div className="p-8 text-center text-gray-600">Branch Management Page - Coming Soon</div>} />
+              <Route path="branch/*" element={<Branch />} />
               
               {/* Feedback System Routes */}
-              <Route path="feedback" element={<div className="p-8 text-center text-gray-600">Feedback Page - Coming Soon</div>} />
+              <Route path="feedback/*" element={<Feedback />} />
               
               {/* Finance System Routes */}
               <Route path="finance/*" element={<Finance />} />
               
               {/* Chat System Routes */}
-              <Route path="alerts" element={<div className="p-8 text-center text-gray-600">Chat System Page - Coming Soon</div>} />
+              <Route path="alerts/*" element={<Chat />} />
             </Route>
             <Route path="/main-menu" element={<MainMenu />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
