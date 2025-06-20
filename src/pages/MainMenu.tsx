@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { LogOut, Calendar, Users, Building, MessageSquare, DollarSign, Bell, BarChart } from "lucide-react";
+import { LogOut, Calendar, Users, Building, MessageSquare, DollarSign, Bell, BarChart, Stethoscope, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import Logo from "@/components/Logo";
 import MenuCard from "@/components/MenuCard";
@@ -32,71 +32,154 @@ const MainMenu = () => {
 
       {/* System Name */}
       <div className="w-full text-center text-teal-700 text-lg font-semibold tracking-wide mb-6">
-        Clinic Management Systems
+        VisionCare Elite Management Systems
       </div>
       
-      <hr className="max-w-4xl mx-auto w-full border-t border-teal-700/30 mb-8" />
+      <hr className="max-w-6xl mx-auto w-full border-t border-teal-700/30 mb-8" />
 
       {/* Main Content - Vertically and Horizontally Centered */}
       <main className="flex-grow flex items-start justify-center px-6 pb-10">
-        <div className="w-full max-w-4xl">
-          {/* Menu Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-            <Link to="/appointments" className="block">
-              <MenuCard 
-                title="Appointment" 
-                icon={<Calendar size={32} />} 
-                variant="primary" 
-                backgroundImage="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=400&q=80"
-              />
-            </Link>
-            <Link to="/hr-dashboard" className="block">
-              <MenuCard 
-                title="HR/OD" 
-                icon={<Users size={32} />} 
-                variant="primary" 
-                backgroundImage="https://images.unsplash.com/photo-1573497161079-f3fd25cc6b90?auto=format&fit=crop&w=400&q=80"
-              />
-            </Link>
-            <Link to="/branch" className="block">
-              <MenuCard 
-                title="Branch" 
-                icon={<Building size={32} />} 
-                variant="primary" 
-                backgroundImage="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=400&q=80"
-              />
-            </Link>
-            <Link to="/feedback" className="block">
-              <MenuCard 
-                title="Feedback" 
-                icon={<MessageSquare size={32} />} 
-                variant="secondary" 
-              />
-            </Link>
-            <Link to="/finance" className="block">
-              <MenuCard 
-                title="Finance" 
-                icon={<DollarSign size={32} />} 
-                variant="secondary" 
-              />
-            </Link>
-            <Link to="/alerts" className="block">
-              <MenuCard 
-                title="ChatSystem" 
-                icon={<MessageSquare size={32} />} 
-                variant="primary" 
-                backgroundImage="https://images.unsplash.com/photo-1577563908411-5077b6dc7624?auto=format&fit=crop&w=400&q=80"
-              />
-            </Link>
-            <Link to="/" className="block md:col-span-2">
-              <MenuCard 
-                title="Dashboard" 
-                icon={<BarChart size={32} />} 
-                variant="primary" 
-                backgroundImage="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=400&q=80"
-                className="h-full"
-              />
-            </Link>
+        <div className="w-full max-w-6xl">
+          {/* Doctor Section */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-teal-700 mb-4 flex items-center gap-2">
+              <Stethoscope className="h-6 w-6" />
+              ระบบหมอสายตา/จักษุ (งานหน้าร้าน)
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              <Link to="/doctor/queue" className="block">
+                <MenuCard 
+                  title="คิว / นัดหมาย" 
+                  icon={<Calendar size={28} />} 
+                  variant="primary" 
+                  backgroundImage="https://images.unsplash.com/photo-1559757148-5c350d0d3c56?auto=format&fit=crop&w=400&q=80"
+                />
+              </Link>
+              <Link to="/doctor/examination" className="block">
+                <MenuCard 
+                  title="ตรวจสายตา" 
+                  icon={<Stethoscope size={28} />} 
+                  variant="primary" 
+                  backgroundImage="https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&w=400&q=80"
+                />
+              </Link>
+              <Link to="/doctor/sales" className="block">
+                <MenuCard 
+                  title="ขายสินค้า" 
+                  icon={<MessageSquare size={28} />} 
+                  variant="secondary" 
+                />
+              </Link>
+              <Link to="/doctor/billing" className="block">
+                <MenuCard 
+                  title="ออกใบสั่งซื้อ" 
+                  icon={<DollarSign size={28} />} 
+                  variant="secondary" 
+                />
+              </Link>
+            </div>
+          </div>
+
+          {/* Owner Section */}
+          <div className="mb-12">
+            <h2 className="text-2xl font-bold text-amber-600 mb-4 flex items-center gap-2">
+              <Crown className="h-6 w-6" />
+              ระบบเจ้าของ (งานหลังบ้าน)
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              <Link to="/owner/dashboard" className="block">
+                <MenuCard 
+                  title="Dashboard" 
+                  icon={<BarChart size={28} />} 
+                  variant="primary" 
+                  backgroundImage="https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=400&q=80"
+                />
+              </Link>
+              <Link to="/owner/finance" className="block">
+                <MenuCard 
+                  title="การเงิน / งบ" 
+                  icon={<DollarSign size={28} />} 
+                  variant="primary" 
+                  backgroundImage="https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=400&q=80"
+                />
+              </Link>
+              <Link to="/owner/performance" className="block">
+                <MenuCard 
+                  title="Performance" 
+                  icon={<Users size={28} />} 
+                  variant="secondary" 
+                />
+              </Link>
+              <Link to="/owner/corporation" className="block">
+                <MenuCard 
+                  title="บริหารสาขา" 
+                  icon={<Building size={28} />} 
+                  variant="secondary" 
+                />
+              </Link>
+            </div>
+          </div>
+
+          {/* Original Systems */}
+          <div>
+            <h2 className="text-2xl font-bold text-gray-700 mb-4">ระบบเดิม</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+              <Link to="/appointments" className="block">
+                <MenuCard 
+                  title="Appointment" 
+                  icon={<Calendar size={32} />} 
+                  variant="primary" 
+                  backgroundImage="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=400&q=80"
+                />
+              </Link>
+              <Link to="/hr-dashboard" className="block">
+                <MenuCard 
+                  title="HR/OD" 
+                  icon={<Users size={32} />} 
+                  variant="primary" 
+                  backgroundImage="https://images.unsplash.com/photo-1573497161079-f3fd25cc6b90?auto=format&fit=crop&w=400&q=80"
+                />
+              </Link>
+              <Link to="/branch" className="block">
+                <MenuCard 
+                  title="Branch" 
+                  icon={<Building size={32} />} 
+                  variant="primary" 
+                  backgroundImage="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=400&q=80"
+                />
+              </Link>
+              <Link to="/feedback" className="block">
+                <MenuCard 
+                  title="Feedback" 
+                  icon={<MessageSquare size={32} />} 
+                  variant="secondary" 
+                />
+              </Link>
+              <Link to="/finance" className="block">
+                <MenuCard 
+                  title="Finance" 
+                  icon={<DollarSign size={32} />} 
+                  variant="secondary" 
+                />
+              </Link>
+              <Link to="/alerts" className="block">
+                <MenuCard 
+                  title="ChatSystem" 
+                  icon={<MessageSquare size={32} />} 
+                  variant="primary" 
+                  backgroundImage="https://images.unsplash.com/photo-1577563908411-5077b6dc7624?auto=format&fit=crop&w=400&q=80"
+                />
+              </Link>
+              <Link to="/" className="block md:col-span-2">
+                <MenuCard 
+                  title="Dashboard" 
+                  icon={<BarChart size={32} />} 
+                  variant="primary" 
+                  backgroundImage="https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=400&q=80"
+                  className="h-full"
+                />
+              </Link>
+            </div>
           </div>
           
           {/* Logout Button */}
@@ -129,7 +212,7 @@ const MainMenu = () => {
 
       {/* Footer */}
       <footer className="w-full text-center p-4 mt-8 text-teal-700">
-        © 2025 Mula Global. สงวนลิขสิทธิ์ทั้งหมด
+        © 2025 VisionCare Elite. สงวนลิขสิทธิ์ทั้งหมด
       </footer>
     </div>
   );

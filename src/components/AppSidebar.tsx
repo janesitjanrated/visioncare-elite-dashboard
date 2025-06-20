@@ -45,11 +45,49 @@ import {
   Calculator,
   Package,
   AlertTriangle,
-  Bell
+  Bell,
+  ClipboardList,
+  ShoppingCart,
+  RefreshCw,
+  Truck,
+  Phone,
+  FileCheck,
+  Banknote,
+  TrendingDown,
+  Activity,
+  Briefcase
 } from 'lucide-react';
 
 // Define menu items for each system
 const systemMenus = {
+  // ฝั่งหมอ - งานหน้าร้าน (9 เมนูหลัก)
+  doctor: [
+    { icon: ClipboardList, label: 'คิว / นัดหมาย', path: '/doctor/queue' },
+    { icon: Eye, label: 'ตรวจสายตา / วินิจฉัย', path: '/doctor/examination' },
+    { icon: ShoppingCart, label: 'ขายสินค้า', path: '/doctor/sales' },
+    { icon: Receipt, label: 'ออกใบสั่งซื้อ / รับชำระ', path: '/doctor/billing' },
+    { icon: RefreshCw, label: 'เคลมสินค้า', path: '/doctor/claims' },
+    { icon: Truck, label: 'ประกอบ / ส่งของ', path: '/doctor/delivery' },
+    { icon: Phone, label: 'Revisit / Follow-up', path: '/doctor/followup' },
+    { icon: FileCheck, label: 'ฟอร์มตรวจสายตา', path: '/doctor/examination-form' },
+    { icon: FileText, label: 'หมายเหตุ / ใบ Rx', path: '/doctor/prescription' }
+  ],
+  // ฝั่งเจ้าของ - งานหลังบ้าน (12 เมนูหลัก)
+  owner: [
+    { icon: BarChart3, label: 'Dashboard', path: '/owner/dashboard' },
+    { icon: DollarSign, label: 'การเงิน / งบ', path: '/owner/finance' },
+    { icon: Calculator, label: 'ภาษี', path: '/owner/tax' },
+    { icon: Banknote, label: 'เงินกู้', path: '/owner/loans' },
+    { icon: TrendingUp, label: 'Performance ทีม/สาขา', path: '/owner/performance' },
+    { icon: AlertTriangle, label: 'ความเสี่ยง', path: '/owner/risks' },
+    { icon: Target, label: 'โอกาส', path: '/owner/opportunities' },
+    { icon: Package, label: 'ทะเบียนทรัพย์สิน', path: '/owner/assets' },
+    { icon: Archive, label: 'Export เอกสาร', path: '/owner/export' },
+    { icon: Building, label: 'บริหาร Corporation/สาขา', path: '/owner/corporation' },
+    { icon: TrendingDown, label: 'วางแผนภาษี', path: '/owner/tax-planning' },
+    { icon: Activity, label: 'การเติบโต', path: '/owner/growth' }
+  ],
+  // Original systems
   appointment: [
     { icon: CalendarCheck, label: 'รายการนัดหมาย', path: '/appointments/list' },
     { icon: Plus, label: 'สร้างนัดหมาย', path: '/appointments/create' },
@@ -112,6 +150,8 @@ const systemMenus = {
 };
 
 const systemTitles = {
+  doctor: 'ระบบหมอสายตา/จักษุ',
+  owner: 'ระบบเจ้าของ',
   appointment: 'ระบบนัดหมาย',
   hr: 'ระบบ HR/OD',
   branch: 'ระบบสาขา',
@@ -128,6 +168,8 @@ export function AppSidebar() {
 
   // Determine current system based on route
   const getCurrentSystem = () => {
+    if (location.pathname.startsWith('/doctor')) return 'doctor';
+    if (location.pathname.startsWith('/owner')) return 'owner';
     if (location.pathname.startsWith('/appointments')) return 'appointment';
     if (location.pathname.startsWith('/hr-dashboard')) return 'hr';
     if (location.pathname.startsWith('/branch')) return 'branch';

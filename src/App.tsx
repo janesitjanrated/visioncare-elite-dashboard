@@ -15,6 +15,7 @@ import Branch from "./pages/Branch";
 import Feedback from "./pages/Feedback";
 import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
+import DoctorQueue from "./pages/DoctorQueue";
 
 const queryClient = new QueryClient();
 
@@ -36,22 +37,37 @@ const App = () => (
               <Route path="quality" element={<div className="p-8 text-center text-gray-600">Quality Metrics Page - Coming Soon</div>} />
               <Route path="reports" element={<div className="p-8 text-center text-gray-600">Business Reports Page - Coming Soon</div>} />
               
-              {/* Appointment System Routes */}
+              {/* Doctor System Routes (ฝั่งหมอ) */}
+              <Route path="doctor/queue" element={<DoctorQueue />} />
+              <Route path="doctor/examination" element={<div className="p-8 text-center text-gray-600">ตรวจสายตา / วินิจฉัยโรค - Coming Soon</div>} />
+              <Route path="doctor/sales" element={<div className="p-8 text-center text-gray-600">ขายสินค้า - Coming Soon</div>} />
+              <Route path="doctor/billing" element={<div className="p-8 text-center text-gray-600">ออกใบสั่งซื้อ / รับชำระ - Coming Soon</div>} />
+              <Route path="doctor/claims" element={<div className="p-8 text-center text-gray-600">เคลมสินค้า - Coming Soon</div>} />
+              <Route path="doctor/delivery" element={<div className="p-8 text-center text-gray-600">ประกอบ / ส่งของ - Coming Soon</div>} />
+              <Route path="doctor/followup" element={<div className="p-8 text-center text-gray-600">Revisit / Follow-up - Coming Soon</div>} />
+              <Route path="doctor/examination-form" element={<div className="p-8 text-center text-gray-600">ฟอร์มตรวจสายตา - Coming Soon</div>} />
+              <Route path="doctor/prescription" element={<div className="p-8 text-center text-gray-600">หมายเหตุ / ใบ Rx - Coming Soon</div>} />
+              
+              {/* Owner System Routes (ฝั่งเจ้าของ) */}
+              <Route path="owner/dashboard" element={<div className="p-8 text-center text-gray-600">Dashboard เจ้าของ - Coming Soon</div>} />
+              <Route path="owner/finance" element={<div className="p-8 text-center text-gray-600">การเงิน / งบ - Coming Soon</div>} />
+              <Route path="owner/tax" element={<div className="p-8 text-center text-gray-600">ภาษี - Coming Soon</div>} />
+              <Route path="owner/loans" element={<div className="p-8 text-center text-gray-600">เงินกู้ - Coming Soon</div>} />
+              <Route path="owner/performance" element={<div className="p-8 text-center text-gray-600">Performance ทีม/สาขา - Coming Soon</div>} />
+              <Route path="owner/risks" element={<div className="p-8 text-center text-gray-600">ความเสี่ยง - Coming Soon</div>} />
+              <Route path="owner/opportunities" element={<div className="p-8 text-center text-gray-600">โอกาส - Coming Soon</div>} />
+              <Route path="owner/assets" element={<div className="p-8 text-center text-gray-600">ทะเบียนทรัพย์สิน - Coming Soon</div>} />
+              <Route path="owner/export" element={<div className="p-8 text-center text-gray-600">Export เอกสาร - Coming Soon</div>} />
+              <Route path="owner/corporation" element={<div className="p-8 text-center text-gray-600">บริหาร Corporation/สาขา - Coming Soon</div>} />
+              <Route path="owner/tax-planning" element={<div className="p-8 text-center text-gray-600">วางแผนภาษี - Coming Soon</div>} />
+              <Route path="owner/growth" element={<div className="p-8 text-center text-gray-600">การเติบโต - Coming Soon</div>} />
+              
+              {/* Original System Routes */}
               <Route path="appointments/*" element={<Appointments />} />
-              
-              {/* HR/OD System Routes */}
               <Route path="hr-dashboard/*" element={<HRDashboard />} />
-              
-              {/* Branch System Routes */}
               <Route path="branch/*" element={<Branch />} />
-              
-              {/* Feedback System Routes */}
               <Route path="feedback/*" element={<Feedback />} />
-              
-              {/* Finance System Routes */}
               <Route path="finance/*" element={<Finance />} />
-              
-              {/* Chat System Routes */}
               <Route path="alerts/*" element={<Chat />} />
             </Route>
             <Route path="/main-menu" element={<MainMenu />} />
