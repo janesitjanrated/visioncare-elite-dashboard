@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -92,8 +91,15 @@ const DoctorDelivery = () => {
 
   const getNextStatus = (currentStatus: string): DeliveryOrder['status'] => {
     const statusFlow: DeliveryOrder['status'][] = ['waiting-lens', 'assembling', 'qc', 'ready', 'delivered'];
-    const currentIndex = statusFlow.indexOf(currentStatus);
-    return statusFlow[currentIndex + 1];
+    const currentIndex = statusFlow.indexOf(currentStatus as DeliveryOrder['status']);
+    
+    // Ensure we don't go out of bounds and always return a valid status
+    if (currentIndex >= 0 && currentIndex < statusFlow.length - 1) {
+      return statusFlow[currentIndex + 1];
+    }
+    
+    // Fallback to the last status if something goes wrong
+    return 'delivered';
   };
 
   return (
