@@ -25,6 +25,9 @@ import OwnerDashboard from "./pages/OwnerDashboard";
 import OwnerFinance from "./pages/OwnerFinance";
 import OwnerTax from "./pages/OwnerTax";
 import OwnerLoans from "./pages/OwnerLoans";
+import OwnerRisks from "./pages/OwnerRisks";
+import OwnerOpportunities from "./pages/OwnerOpportunities";
+import OwnerAssets from "./pages/OwnerAssets";
 
 const queryClient = new QueryClient();
 
@@ -63,9 +66,9 @@ const App = () => (
               <Route path="owner/tax" element={<OwnerTax />} />
               <Route path="owner/loans" element={<OwnerLoans />} />
               <Route path="owner/performance" element={<div className="p-8 text-center text-gray-600">Performance ทีม/สาขา - Coming Soon</div>} />
-              <Route path="owner/risks" element={<div className="p-8 text-center text-gray-600">ความเสี่ยง - Coming Soon</div>} />
-              <Route path="owner/opportunities" element={<div className="p-8 text-center text-gray-600">โอกาส - Coming Soon</div>} />
-              <Route path="owner/assets" element={<div className="p-8 text-center text-gray-600">ทะเบียนทรัพย์สิน - Coming Soon</div>} />
+              <Route path="owner/risks" element={<OwnerRisks />} />
+              <Route path="owner/opportunities" element={<OwnerOpportunities />} />
+              <Route path="owner/assets" element={<OwnerAssets />} />
               <Route path="owner/export" element={<div className="p-8 text-center text-gray-600">Export เอกสาร - Coming Soon</div>} />
               <Route path="owner/corporation" element={<div className="p-8 text-center text-gray-600">บริหาร Corporation/สาขา - Coming Soon</div>} />
               <Route path="owner/tax-planning" element={<div className="p-8 text-center text-gray-600">วางแผนภาษี - Coming Soon</div>} />
