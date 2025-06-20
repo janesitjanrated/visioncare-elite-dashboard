@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,6 +18,13 @@ import DoctorQueue from "./pages/DoctorQueue";
 import DoctorExamination from "./pages/DoctorExamination";
 import DoctorSales from "./pages/DoctorSales";
 import DoctorBilling from "./pages/DoctorBilling";
+import DoctorClaims from "./pages/DoctorClaims";
+import DoctorDelivery from "./pages/DoctorDelivery";
+import DoctorFollowUp from "./pages/DoctorFollowUp";
+import OwnerDashboard from "./pages/OwnerDashboard";
+import OwnerFinance from "./pages/OwnerFinance";
+import OwnerTax from "./pages/OwnerTax";
+import OwnerLoans from "./pages/OwnerLoans";
 
 const queryClient = new QueryClient();
 
@@ -45,17 +51,17 @@ const App = () => (
               <Route path="doctor/examination" element={<DoctorExamination />} />
               <Route path="doctor/sales" element={<DoctorSales />} />
               <Route path="doctor/billing" element={<DoctorBilling />} />
-              <Route path="doctor/claims" element={<div className="p-8 text-center text-gray-600">เคลมสินค้า - Coming Soon</div>} />
-              <Route path="doctor/delivery" element={<div className="p-8 text-center text-gray-600">ประกอบ / ส่งของ - Coming Soon</div>} />
-              <Route path="doctor/followup" element={<div className="p-8 text-center text-gray-600">Revisit / Follow-up - Coming Soon</div>} />
+              <Route path="doctor/claims" element={<DoctorClaims />} />
+              <Route path="doctor/delivery" element={<DoctorDelivery />} />
+              <Route path="doctor/followup" element={<DoctorFollowUp />} />
               <Route path="doctor/examination-form" element={<div className="p-8 text-center text-gray-600">ฟอร์มตรวจสายตา - Coming Soon</div>} />
               <Route path="doctor/prescription" element={<div className="p-8 text-center text-gray-600">หมายเหตุ / ใบ Rx - Coming Soon</div>} />
               
               {/* Owner System Routes (ฝั่งเจ้าของ) */}
-              <Route path="owner/dashboard" element={<div className="p-8 text-center text-gray-600">Dashboard เจ้าของ - Coming Soon</div>} />
-              <Route path="owner/finance" element={<div className="p-8 text-center text-gray-600">การเงิน / งบ - Coming Soon</div>} />
-              <Route path="owner/tax" element={<div className="p-8 text-center text-gray-600">ภาษี - Coming Soon</div>} />
-              <Route path="owner/loans" element={<div className="p-8 text-center text-gray-600">เงินกู้ - Coming Soon</div>} />
+              <Route path="owner/dashboard" element={<OwnerDashboard />} />
+              <Route path="owner/finance" element={<OwnerFinance />} />
+              <Route path="owner/tax" element={<OwnerTax />} />
+              <Route path="owner/loans" element={<OwnerLoans />} />
               <Route path="owner/performance" element={<div className="p-8 text-center text-gray-600">Performance ทีม/สาขา - Coming Soon</div>} />
               <Route path="owner/risks" element={<div className="p-8 text-center text-gray-600">ความเสี่ยง - Coming Soon</div>} />
               <Route path="owner/opportunities" element={<div className="p-8 text-center text-gray-600">โอกาส - Coming Soon</div>} />
