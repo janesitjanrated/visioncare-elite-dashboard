@@ -16,6 +16,9 @@ import Feedback from "./pages/Feedback";
 import Chat from "./pages/Chat";
 import NotFound from "./pages/NotFound";
 import DoctorQueue from "./pages/DoctorQueue";
+import DoctorExamination from "./pages/DoctorExamination";
+import DoctorSales from "./pages/DoctorSales";
+import DoctorBilling from "./pages/DoctorBilling";
 
 const queryClient = new QueryClient();
 
@@ -39,9 +42,9 @@ const App = () => (
               
               {/* Doctor System Routes (ฝั่งหมอ) */}
               <Route path="doctor/queue" element={<DoctorQueue />} />
-              <Route path="doctor/examination" element={<div className="p-8 text-center text-gray-600">ตรวจสายตา / วินิจฉัยโรค - Coming Soon</div>} />
-              <Route path="doctor/sales" element={<div className="p-8 text-center text-gray-600">ขายสินค้า - Coming Soon</div>} />
-              <Route path="doctor/billing" element={<div className="p-8 text-center text-gray-600">ออกใบสั่งซื้อ / รับชำระ - Coming Soon</div>} />
+              <Route path="doctor/examination" element={<DoctorExamination />} />
+              <Route path="doctor/sales" element={<DoctorSales />} />
+              <Route path="doctor/billing" element={<DoctorBilling />} />
               <Route path="doctor/claims" element={<div className="p-8 text-center text-gray-600">เคลมสินค้า - Coming Soon</div>} />
               <Route path="doctor/delivery" element={<div className="p-8 text-center text-gray-600">ประกอบ / ส่งของ - Coming Soon</div>} />
               <Route path="doctor/followup" element={<div className="p-8 text-center text-gray-600">Revisit / Follow-up - Coming Soon</div>} />

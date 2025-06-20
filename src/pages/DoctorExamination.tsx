@@ -3,109 +3,120 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Save, Eye, User } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, User, Clock, AlertCircle } from 'lucide-react';
 import ExaminationForm from '@/components/doctor/ExaminationForm';
-import { ExaminationForm as ExaminationFormType } from '@/data/doctorMockData';
 import { sessionManager } from '@/utils/sessionManager';
-import { patients } from '@/data/patientMockData';
+import { mockQueues, Queue, ExaminationForm as ExaminationFormType } from '@/data/doctorMockData';
+import { useToast } from '@/hooks/use-toast';
 
 const DoctorExamination = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
-  
-  const patientId = searchParams.get('patientId');
-  const queueId = searchParams.get('queueId');
-  
-  const [patient, setPatient] = useState(null);
-  const [examinationForm, setExaminationForm] = useState<ExaminationFormType | null>(null);
+  const [currentQueue, setCurrentQueue] = useState<Queue | null>(null);
+  const [patient, setPatient] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const queueId = searchParams.get('queueId');
+
   useEffect(() => {
-    if (patientId) {
-      const foundPatient = patients.find(p => p.id === patientId);
-      setPatient(foundPatient);
+    if (queueId) {
+      // Load queue data from session storage
+      const queues = sessionManager.get<Queue[]>('queues') || mockQueues;
+      const queue = queues.find(q => q.id === queueId);
       
-      // Check if examination already exists in session
-      const existingExamination = sessionManager.get(`examination_${patientId}`);
-      if (existingExamination) {
-        setExaminationForm(existingExamination);
+      if (queue) {
+        setCurrentQueue(queue);
+        // Mock patient data based on queue
+        setPatient({
+          id: queue.patientId,
+          fullName: queue.patientName,
+          age: 35,
+          gender: 'female',
+          phone: '081-234-5678',
+          address: {
+            street: '123 ถนนพหลโยธิน แขวงสามเสนใน เขตพญาไท กรุงเทพมหานคร 10400'
+          }
+        });
       }
     }
-  }, [patientId]);
+  }, [queueId]);
 
-  const handleSaveExamination = async (formData: ExaminationFormType) => {
+  const handleSaveExamination = (data: ExaminationFormType) => {
     setIsLoading(true);
     
-    try {
-      // Save to session storage
-      sessionManager.set(`examination_${patientId}`, formData);
-      
-      // Update queue status if queueId exists
-      if (queueId) {
-        const queues = sessionManager.get('doctorQueues') || [];
-        const updatedQueues = queues.map(q => 
-          q.id === queueId 
-            ? { ...q, status: 'completed', actualTime: new Date().toLocaleTimeString('th-TH', { hour12: false }) }
-            : q
-        );
-        sessionManager.set('doctorQueues', updatedQueues);
-      }
-      
-      toast({
-        title: "บันทึกแล้ว",
-        description: "บันทึกผลการตรวจสายตาเรียบร้อยแล้ว",
-      });
-      
-      navigate('/doctor/queue');
-    } catch (error) {
-      toast({
-        title: "เกิดข้อผิดพลาด",
-        description: "ไม่สามารถบันทึกข้อมูลได้",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
+    // Save examination data to session storage
+    const examinations = sessionManager.get<ExaminationFormType[]>('examinations') || [];
+    examinations.push(data);
+    sessionManager.set('examinations', examinations);
+
+    // Update queue status to completed
+    if (currentQueue) {
+      const queues = sessionManager.get<Queue[]>('queues') || mockQueues;
+      const updatedQueues = queues.map(queue => 
+        queue.id === currentQueue.id 
+          ? { ...queue, status: 'completed' as const }
+          : queue
+      );
+      sessionManager.set('queues', updatedQueues);
     }
+
+    toast({
+      title: "บันทึกผลการตรวจสำเร็จ",
+      description: "ข้อมูลการตรวจสายตาได้รับการบันทึกแล้ว",
+    });
+
+    setIsLoading(false);
+    
+    // Navigate back to queue
+    navigate('/doctor/queue');
   };
 
-  if (!patient) {
+  if (!currentQueue || !patient) {
     return (
-      <div className="container mx-auto p-6">
-        <div className="text-center">
-          <p className="text-gray-500">ไม่พบข้อมูลผู้ป่วย</p>
-          <Button onClick={() => navigate('/doctor/queue')} className="mt-4">
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            กลับไปหน้าคิว
-          </Button>
-        </div>
+      <div className="p-6">
+        <Card>
+          <CardContent className="flex items-center justify-center h-64">
+            <div className="text-center">
+              <AlertCircle className="h-12 w-12 text-yellow-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">ไม่พบข้อมูลผู้ป่วย</h3>
+              <p className="text-gray-600 mb-4">กรุณาเลือกผู้ป่วยจากคิวก่อนเริ่มการตรวจ</p>
+              <Button onClick={() => navigate('/doctor/queue')}>
+                กลับไปที่คิว
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
+    <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
+      <div className="flex items-center justify-between">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="outline"
+            size="sm"
             onClick={() => navigate('/doctor/queue')}
-            className="flex items-center gap-2"
           >
-            <ArrowLeft className="h-4 w-4" />
-            กลับ
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            กลับไปคิว
           </Button>
-          <div className="flex items-center gap-2">
-            <Eye className="h-6 w-6 text-teal-600" />
-            <h1 className="text-2xl font-bold text-gray-900">ตรวจสายตา / วินิจฉัยโรค</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">ตรวจสายตา / วินิจฉัยโรค</h1>
+            <p className="text-gray-600 mt-1">บันทึกผลการตรวจสายตาและวินิจฉัยโรค</p>
           </div>
         </div>
+        <Badge variant="default" className="bg-blue-600">
+          กำลังตรวจ
+        </Badge>
       </div>
 
       {/* Patient Info Card */}
-      <Card className="mb-6">
+      <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
@@ -115,27 +126,51 @@ const DoctorExamination = () => {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <p className="text-sm text-gray-500">ชื่อ-นามสกุล</p>
-              <p className="font-medium">{patient.fullName}</p>
+              <p className="text-sm text-gray-600">ชื่อ-นามสกุล</p>
+              <p className="font-semibold">{patient.fullName}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">อายุ</p>
-              <p className="font-medium">{patient.age} ปี</p>
+              <p className="text-sm text-gray-600">อายุ</p>
+              <p className="font-semibold">{patient.age} ปี</p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">เพศ</p>
-              <p className="font-medium">
+              <p className="text-sm text-gray-600">เพศ</p>
+              <p className="font-semibold">
                 {patient.gender === 'male' ? 'ชาย' : patient.gender === 'female' ? 'หญิง' : 'อื่นๆ'}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-500">โทรศัพท์</p>
-              <p className="font-medium">{patient.phone}</p>
+              <p className="text-sm text-gray-600">เบอร์โทรศัพท์</p>
+              <p className="font-semibold">{patient.phone}</p>
             </div>
             <div className="md:col-span-2">
-              <p className="text-sm text-gray-500">ที่อยู่</p>
-              <p className="font-medium">{patient.address.street}</p>
+              <p className="text-sm text-gray-600">ที่อยู่</p>
+              <p className="font-semibold">{patient.address.street}</p>
             </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Queue Info */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <Clock className="h-5 w-5 text-gray-500" />
+              <div>
+                <p className="font-semibold">คิวที่ {currentQueue.id}</p>
+                <p className="text-sm text-gray-600">
+                  {currentQueue.appointmentType === 'walk-in' ? 'Walk-in' : 'นัดหมาย'} • 
+                  เวลา {currentQueue.estimatedTime}
+                </p>
+              </div>
+            </div>
+            {currentQueue.notes && (
+              <div className="text-right">
+                <p className="text-sm text-gray-600">หมายเหตุ</p>
+                <p className="font-semibold">{currentQueue.notes}</p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -143,7 +178,6 @@ const DoctorExamination = () => {
       {/* Examination Form */}
       <ExaminationForm
         patient={patient}
-        initialData={examinationForm}
         onSave={handleSaveExamination}
         isLoading={isLoading}
       />

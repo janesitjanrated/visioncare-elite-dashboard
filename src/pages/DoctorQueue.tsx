@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,12 +13,14 @@ import {
   XCircle,
   UserPlus,
   Calendar,
-  Stethoscope
+  Stethoscope,
+  Eye
 } from 'lucide-react';
 import { mockQueues, Queue } from '@/data/doctorMockData';
 import { sessionManager } from '@/utils/sessionManager';
 
 const DoctorQueue = () => {
+  const navigate = useNavigate();
   const [queues, setQueues] = useState<Queue[]>([]);
   const [showAddQueue, setShowAddQueue] = useState(false);
 
@@ -42,6 +45,13 @@ const DoctorQueue = () => {
       queue.id === queueId ? { ...queue, status: newStatus } : queue
     );
     updateQueues(updatedQueues);
+  };
+
+  const handleStartExamination = (queue: Queue) => {
+    // Update status to in-progress
+    updateQueueStatus(queue.id, 'in-progress');
+    // Navigate to examination page
+    navigate(`/doctor/examination?queueId=${queue.id}`);
   };
 
   const getStatusBadge = (status: Queue['status']) => {
@@ -175,10 +185,21 @@ const DoctorQueue = () => {
                       {queue.status === 'waiting' && (
                         <Button 
                           size="sm" 
-                          onClick={() => updateQueueStatus(queue.id, 'in-progress')}
+                          onClick={() => handleStartExamination(queue)}
                           className="bg-blue-600 hover:bg-blue-700"
                         >
+                          <Eye className="h-4 w-4 mr-1" />
                           เริ่มตรวจ
+                        </Button>
+                      )}
+                      {queue.status === 'in-progress' && (
+                        <Button 
+                          size="sm" 
+                          onClick={() => navigate(`/doctor/examination?queueId=${queue.id}`)}
+                          className="bg-purple-600 hover:bg-purple-700"
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          ดูการตรวจ
                         </Button>
                       )}
                       {queue.status === 'in-progress' && (
