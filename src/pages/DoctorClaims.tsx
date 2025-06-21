@@ -1,14 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, RefreshCw, Camera, AlertCircle, CheckCircle, XCircle, Clock } from 'lucide-react';
-import { sessionManager } from '@/utils/sessionManager';
-import { mockClaims, Claim } from '@/data/doctorMockData';
+import { ArrowLeft, RefreshCw, Camera, CheckCircle, XCircle } from 'lucide-react';
+import { doctorService, Claim } from '@/services/doctorService';
 import { useToast } from '@/hooks/use-toast';
 
 const DoctorClaims = () => {
@@ -17,11 +14,27 @@ const DoctorClaims = () => {
   const [claims, setClaims] = useState<Claim[]>([]);
   const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
   const [resolution, setResolution] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const storedClaims = sessionManager.get<Claim[]>('claims') || mockClaims;
-    setClaims(storedClaims);
+    fetchClaims();
   }, []);
+
+  const fetchClaims = async () => {
+    try {
+      setLoading(true);
+      const claimsData = await doctorService.getClaims();
+      setClaims(claimsData);
+    } catch (error) {
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถโหลดข้อมูลเคลมได้",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -33,39 +46,46 @@ const DoctorClaims = () => {
     }
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'pending': return <Clock className="h-4 w-4" />;
-      case 'approved': return <CheckCircle className="h-4 w-4" />;
-      case 'rejected': return <XCircle className="h-4 w-4" />;
-      case 'completed': return <CheckCircle className="h-4 w-4" />;
-      default: return <AlertCircle className="h-4 w-4" />;
+  const handleProcessClaim = async (claimId: string, action: 'approve' | 'reject') => {
+    try {
+      const updatedClaim = await doctorService.updateClaim(claimId, {
+        status: action === 'approve' ? 'approved' : 'rejected',
+        resolvedAt: new Date().toISOString(),
+        resolution: resolution || `${action === 'approve' ? 'อนุมัติ' : 'ปฏิเสธ'}การเคลม`
+      });
+      
+      setClaims(claims.map(claim => 
+        claim.id === claimId ? updatedClaim : claim
+      ));
+      
+      toast({
+        title: `${action === 'approve' ? 'อนุมัติ' : 'ปฏิเสธ'}การเคลมสำเร็จ`,
+        description: `การเคลม ${claimId} ได้รับการ${action === 'approve' ? 'อนุมัติ' : 'ปฏิเสธ'}แล้ว`,
+      });
+      
+      setSelectedClaim(null);
+      setResolution('');
+    } catch (error) {
+      toast({
+        title: "เกิดข้อผิดพลาด",
+        description: "ไม่สามารถอัปเดตสถานะเคลมได้",
+        variant: "destructive"
+      });
     }
   };
 
-  const handleProcessClaim = (claimId: string, action: 'approve' | 'reject') => {
-    const updatedClaims = claims.map(claim => 
-      claim.id === claimId 
-        ? { 
-            ...claim, 
-            status: action === 'approve' ? 'approved' as const : 'rejected' as const,
-            resolvedAt: new Date().toISOString(),
-            resolution: resolution || `${action === 'approve' ? 'อนุมัติ' : 'ปฏิเสธ'}การเคลม`
-          }
-        : claim
+  if (loading) {
+    return (
+      <div className="p-6 space-y-6">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600 mx-auto"></div>
+            <p className="text-gray-500 mt-2">กำลังโหลดข้อมูล...</p>
+          </div>
+        </div>
+      </div>
     );
-    
-    setClaims(updatedClaims);
-    sessionManager.set('claims', updatedClaims);
-    
-    toast({
-      title: `${action === 'approve' ? 'อนุมัติ' : 'ปฏิเสธ'}การเคลมสำเร็จ`,
-      description: `การเคลม ${claimId} ได้รับการ${action === 'approve' ? 'อนุมัติ' : 'ปฏิเสธ'}แล้ว`,
-    });
-    
-    setSelectedClaim(null);
-    setResolution('');
-  };
+  }
 
   return (
     <div className="p-6 space-y-6">
@@ -109,12 +129,9 @@ const DoctorClaims = () => {
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-semibold">#{claim.id}</span>
                   <Badge className={getStatusColor(claim.status)}>
-                    {getStatusIcon(claim.status)}
-                    <span className="ml-1">
-                      {claim.status === 'pending' ? 'รอดำเนินการ' :
-                       claim.status === 'approved' ? 'อนุมัติ' :
-                       claim.status === 'rejected' ? 'ปฏิเสธ' : 'เสร็จสิ้น'}
-                    </span>
+                    {claim.status === 'pending' ? 'รอดำเนินการ' :
+                     claim.status === 'approved' ? 'อนุมัติ' :
+                     claim.status === 'rejected' ? 'ปฏิเสธ' : 'เสร็จสิ้น'}
                   </Badge>
                 </div>
                 <p className="text-sm text-gray-600 mb-1">{claim.patientName}</p>
@@ -168,7 +185,7 @@ const DoctorClaims = () => {
                   </div>
                 </div>
               )}
-
+              
               {selectedClaim.status === 'pending' && (
                 <div className="space-y-4 pt-4 border-t">
                   <div>
