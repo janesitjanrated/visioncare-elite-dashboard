@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -28,6 +29,11 @@ import OwnerLoans from "./pages/OwnerLoans";
 import OwnerRisks from "./pages/OwnerRisks";
 import OwnerOpportunities from "./pages/OwnerOpportunities";
 import OwnerAssets from "./pages/OwnerAssets";
+import OwnerPerformance from "./pages/OwnerPerformance";
+import OwnerExport from "./pages/OwnerExport";
+import OwnerCorporation from "./pages/OwnerCorporation";
+import OwnerTaxPlanning from "./pages/OwnerTaxPlanning";
+import OwnerGrowth from "./pages/OwnerGrowth";
 
 const queryClient = new QueryClient();
 
@@ -65,14 +71,14 @@ const App = () => (
               <Route path="owner/finance" element={<OwnerFinance />} />
               <Route path="owner/tax" element={<OwnerTax />} />
               <Route path="owner/loans" element={<OwnerLoans />} />
-              <Route path="owner/performance" element={<div className="p-8 text-center text-gray-600">Performance ทีม/สาขา - Coming Soon</div>} />
+              <Route path="owner/performance" element={<OwnerPerformance />} />
               <Route path="owner/risks" element={<OwnerRisks />} />
               <Route path="owner/opportunities" element={<OwnerOpportunities />} />
               <Route path="owner/assets" element={<OwnerAssets />} />
-              <Route path="owner/export" element={<div className="p-8 text-center text-gray-600">Export เอกสาร - Coming Soon</div>} />
-              <Route path="owner/corporation" element={<div className="p-8 text-center text-gray-600">บริหาร Corporation/สาขา - Coming Soon</div>} />
-              <Route path="owner/tax-planning" element={<div className="p-8 text-center text-gray-600">วางแผนภาษี - Coming Soon</div>} />
-              <Route path="owner/growth" element={<div className="p-8 text-center text-gray-600">การเติบโต - Coming Soon</div>} />
+              <Route path="owner/export" element={<OwnerExport />} />
+              <Route path="owner/corporation" element={<OwnerCorporation />} />
+              <Route path="owner/tax-planning" element={<OwnerTaxPlanning />} />
+              <Route path="owner/growth" element={<OwnerGrowth />} />
               
               {/* Original System Routes */}
               <Route path="appointments/*" element={<Appointments />} />
