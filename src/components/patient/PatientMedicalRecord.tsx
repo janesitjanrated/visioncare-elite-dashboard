@@ -364,9 +364,9 @@ const PatientMedicalRecord: React.FC<PatientMedicalRecordProps> = ({ patient }) 
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">น้อย (< 2 ชั่วโมง)</SelectItem>
+                    <SelectItem value="low">น้อย (&lt; 2 ชั่วโมง)</SelectItem>
                     <SelectItem value="medium">ปานกลาง (2-4 ชั่วโมง)</SelectItem>
-                    <SelectItem value="high">มาก (> 4 ชั่วโมง)</SelectItem>
+                    <SelectItem value="high">มาก (&gt; 4 ชั่วโมง)</SelectItem>
                   </SelectContent>
                 </Select>
               ) : (

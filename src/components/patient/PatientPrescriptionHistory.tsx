@@ -74,7 +74,7 @@ const PatientPrescriptionHistory: React.FC<PatientPrescriptionHistoryProps> = ({
                 {patient.currentPrescription.os.add && (
                   <div className="flex justify-between">
                     <span className="text-gray-600">Add:</span>
-                    <span class.="font-semibold">{patient.currentPrescription.os.add}</span>
+                    <span className="font-semibold">{patient.currentPrescription.os.add}</span>
                   </div>
                 )}
               </div>
@@ -186,17 +186,17 @@ const PatientPrescriptionHistory: React.FC<PatientPrescriptionHistoryProps> = ({
                       return (
                         <TableRow key={prescription.id}>
                           <TableCell>{new Date(prescription.date).toLocaleDateString('th-TH')}</TableCell>
-                          <TableCell>{prescription.od.sphere}</TableCell>
+                          <TableCell>{prescription.od.sphere}</TableCell>  
                           <TableCell>{prescription.os.sphere}</TableCell>
                           <TableCell>
                             {odChange !== '-' && (
                               <div className="text-sm">
                                 <span className={parseFloat(odChange) > 0 ? 'text-red-600' : 'text-green-600'}>
-                                  OD: {odChange > 0 ? '+' : ''}{odChange}
+                                  OD: {parseFloat(odChange) > 0 ? '+' : ''}{odChange}
                                 </span>
                                 <br />
                                 <span className={parseFloat(osChange) > 0 ? 'text-red-600' : 'text-green-600'}>
-                                  OS: {osChange > 0 ? '+' : ''}{osChange}
+                                  OS: {parseFloat(osChange) > 0 ? '+' : ''}{osChange}
                                 </span>
                               </div>
                             )}

@@ -35,6 +35,19 @@ const PatientBillingHistory: React.FC<PatientBillingHistoryProps> = ({ patient }
     }).format(amount);
   };
 
+  // Calculate payment method statistics
+  const paymentMethodStats = patient.billingHistory
+    .filter(bill => bill.paymentMethod && bill.status === 'paid')
+    .reduce((acc, bill) => {
+      const method = bill.paymentMethod!;
+      if (!acc[method]) {
+        acc[method] = { count: 0, amount: 0 };
+      }
+      acc[method].count += 1;
+      acc[method].amount += bill.amount;
+      return acc;
+    }, {} as Record<string, { count: number; amount: number }>);
+
   return (
     <div className="space-y-6">
       {/* Billing Summary */}
@@ -149,32 +162,20 @@ const PatientBillingHistory: React.FC<PatientBillingHistoryProps> = ({ patient }
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {patient.billingHistory
-                .filter(bill => bill.paymentMethod && bill.status === 'paid')
-                .reduce((acc, bill) => {
-                  const method = bill.paymentMethod!;
-                  if (!acc[method]) {
-                    acc[method] = { count: 0, amount: 0 };
-                  }
-                  acc[method].count += 1;
-                  acc[method].amount += bill.amount;
-                  return acc;
-                }, {} as Record<string, { count: number; amount: number }>)
-                |> (methods => Object.entries(methods).map(([method, data]) => (
-                  <div key={method} className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                    <div>
-                      <p className="font-semibold">{method}</p>
-                      <p className="text-sm text-gray-600">{data.count} ครั้ง</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold">{formatCurrency(data.amount)}</p>
-                      <p className="text-sm text-gray-600">
-                        {((data.amount / totalAmount) * 100).toFixed(1)}%
-                      </p>
-                    </div>
+              {Object.entries(paymentMethodStats).map(([method, data]) => (
+                <div key={method} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                  <div>
+                    <p className="font-semibold">{method}</p>
+                    <p className="text-sm text-gray-600">{data.count} ครั้ง</p>
                   </div>
-                )))
-              }
+                  <div className="text-right">
+                    <p className="font-semibold">{formatCurrency(data.amount)}</p>
+                    <p className="text-sm text-gray-600">
+                      {((data.amount / totalAmount) * 100).toFixed(1)}%
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

@@ -115,7 +115,7 @@ const PatientGeneralInfo: React.FC<PatientGeneralInfoProps> = ({ patient }) => {
             <div className="space-y-2">
               <h4 className="font-semibold">ตาขวา (OD)</h4>
               <div className="bg-gray-50 p-3 rounded">
-                <p>Sphere: {patient.currentPrescription.o.sphere}</p>
+                <p>Sphere: {patient.currentPrescription.od.sphere}</p>
                 <p>Cylinder: {patient.currentPrescription.od.cylinder}</p>
                 <p>Axis: {patient.currentPrescription.od.axis}</p>
               </div>
