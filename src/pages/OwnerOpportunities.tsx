@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -12,8 +11,7 @@ import {
   DollarSign, 
   Calendar,
   Star,
-  BarChart3,
-  Growth
+  BarChart3
 } from 'lucide-react';
 
 const OwnerOpportunities = () => {
