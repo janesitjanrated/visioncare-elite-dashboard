@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Save, Eye, Activity, Stethoscope, FileText } from 'lucide-react';
+import { Save, Eye, Activity, Stethoscope, FileText, BarChart3 } from 'lucide-react';
 import { ExaminationForm as ExaminationFormType } from '@/data/doctorMockData';
+import { OptometricData } from '@/types/optometric';
+import OptometricAnalysis from '@/components/optometric/OptometricAnalysis';
 
 interface ExaminationFormProps {
   patient: any;
@@ -22,6 +24,21 @@ const ExaminationForm: React.FC<ExaminationFormProps> = ({
   onSave,
   isLoading = false
 }) => {
+  const [showOptometricAnalysis, setShowOptometricAnalysis] = useState(false);
+  const [optometricData, setOptometricData] = useState<OptometricData>({
+    phoriaNear: null,
+    biBlur: null,
+    biBreak: null,
+    biRecovery: null,
+    boBlur: null,
+    boBreak: null,
+    boRecovery: null,
+    nra: null,
+    pra: null,
+    npc: null,
+    amplitudeAccommodation: null
+  });
+
   const { register, handleSubmit, formState: { errors }, reset, watch } = useForm({
     defaultValues: initialData || {
       chiefComplaint: '',
@@ -52,6 +69,13 @@ const ExaminationForm: React.FC<ExaminationFormProps> = ({
     }
   });
 
+  const updateOptometricData = (field: keyof OptometricData, value: number | null) => {
+    setOptometricData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
   const onSubmit = (data: any) => {
     const examinationData: ExaminationFormType = {
       id: initialData?.id || `EX${Date.now()}`,
@@ -79,7 +103,7 @@ const ExaminationForm: React.FC<ExaminationFormProps> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5" />
-            อาการสำคัญและประวัติ
+            1. อาการสำคัญและประวัติ
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -123,7 +147,7 @@ const ExaminationForm: React.FC<ExaminationFormProps> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Eye className="h-5 w-5" />
-            ความคมชัดของสายตา (Visual Acuity)
+            2. ความคมชัดของสายตา (Visual Acuity)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -180,7 +204,7 @@ const ExaminationForm: React.FC<ExaminationFormProps> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Activity className="h-5 w-5" />
-            การหักเหของแสง (Refraction)
+            3. การหักเหของแสง (Refraction)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -236,7 +260,7 @@ const ExaminationForm: React.FC<ExaminationFormProps> = ({
                   />
                 </div>
                 <div>
-                  <Label htmlFor="leftCylinder">Cylinder</Label>
+                  <Label htmlFor="leftC<Content continues_right>ylinder">Cylinder</Label>
                   <Input
                     id="leftCylinder"
                     type="number"
@@ -262,70 +286,178 @@ const ExaminationForm: React.FC<ExaminationFormProps> = ({
         </CardContent>
       </Card>
 
-      {/* Functional Tests */}
+      {/* Binocular Vision Tests - 15 Complete Tests */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Stethoscope className="h-5 w-5" />
-            การตรวจการทำงานของดวงตา
+            4-15. การตรวจ Binocular Vision (15 ข้อครบถ้วน)
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <CardContent className="space-y-6">
+          {/* Phoria Tests */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="binocularVision">การมองเห็นสองตา</Label>
+              <Label htmlFor="phoriaNear">4. Phoria Near (Prism Δ)</Label>
               <Input
-                id="binocularVision"
-                {...register('functionalTest.binocularVision')}
-                placeholder="ปกติ/ผิดปกติ"
+                id="phoriaNear"
+                type="number"
+                step="0.5"
+                placeholder="Exo(-), Eso(+)"
+                onChange={(e) => updateOptometricData('phoriaNear', e.target.value ? parseFloat(e.target.value) : null)}
               />
             </div>
             <div>
-              <Label htmlFor="accommodation">การปรับโฟกัส</Label>
+              <Label htmlFor="phoriaDistance">5. Phoria Distance</Label>
               <Input
-                id="accommodation"
-                {...register('functionalTest.accommodation')}
-                placeholder="ปกติ/ผิดปกติ"
-              />
-            </div>
-            <div>
-              <Label htmlFor="convergence">การบรรจบสายตา</Label>
-              <Input
-                id="convergence"
-                {...register('functionalTest.convergence')}
-                placeholder="ปกติ/ผิดปกติ"
+                id="phoriaDistance"
+                {...register('phoriaDistance')}
+                placeholder="Distance phoria"
               />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {/* Base In Tests */}
+          <div>
+            <h4 className="font-semibold mb-3">Base In Tests (BI)</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="biBlur">6. BI Blur (Δ)</Label>
+                <Input
+                  id="biBlur"
+                  type="number"
+                  step="0.5"
+                  placeholder="Base-in blur"
+                  onChange={(e) => updateOptometricData('biBlur', e.target.value ? parseFloat(e.target.value) : null)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="biBreak">7. BI Break (Δ)</Label>
+                <Input
+                  id="biBreak"
+                  type="number"
+                  step="0.5"
+                  placeholder="Base-in break"
+                  onChange={(e) => updateOptometricData('biBreak', e.target.value ? parseFloat(e.target.value) : null)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="biRecovery">8. BI Recovery (Δ)</Label>
+                <Input
+                  id="biRecovery"
+                  type="number"
+                  step="0.5"
+                  placeholder="Base-in recovery"
+                  onChange={(e) => updateOptometricData('biRecovery', e.target.value ? parseFloat(e.target.value) : null)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Base Out Tests */}
+          <div>
+            <h4 className="font-semibold mb-3">Base Out Tests (BO)</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <Label htmlFor="boBlur">9. BO Blur (Δ)</Label>
+                <Input
+                  id="boBlur"
+                  type="number"
+                  step="0.5"
+                  placeholder="Base-out blur"
+                  onChange={(e) => updateOptometricData('boBlur', e.target.value ? parseFloat(e.target.value) : null)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="boBreak">10. BO Break (Δ)</Label>
+                <Input
+                  id="boBreak"
+                  type="number"
+                  step="0.5"
+                  placeholder="Base-out break"
+                  onChange={(e) => updateOptometricData('boBreak', e.target.value ? parseFloat(e.target.value) : null)}
+                />
+              </div>
+              <div>
+                <Label htmlFor="boRecovery">11. BO Recovery (Δ)</Label>
+                <Input
+                  id="boRecovery"
+                  type="number"
+                  step="0.5"
+                  placeholder="Base-out recovery"
+                  onChange={(e) => updateOptometricData('boRecovery', e.target.value ? parseFloat(e.target.value) : null)}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Accommodation Tests */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="vergence">Vergence</Label>
+              <Label htmlFor="nra">12. NRA (Diopters)</Label>
               <Input
-                id="vergence"
-                {...register('vergence')}
-                placeholder="BI/BO values"
+                id="nra"
+                type="number"
+                step="0.25"
+                placeholder="Negative Relative Accommodation"
+                onChange={(e) => updateOptometricData('nra', e.target.value ? parseFloat(e.target.value) : null)}
               />
             </div>
             <div>
-              <Label htmlFor="maddoxTest">Maddox Test</Label>
+              <Label htmlFor="pra">13. PRA (Diopters)</Label>
               <Input
-                id="maddoxTest"
-                {...register('maddoxTest')}
-                placeholder="ผลการตรวจ"
-              />
-            </div>
-            <div>
-              <Label htmlFor="phoria">Phoria</Label>
-              <Input
-                id="phoria"
-                {...register('phoria')}
-                placeholder="Eso/Exo/Ortho"
+                id="pra"
+                type="number"
+                step="0.25"
+                placeholder="Positive Relative Accommodation (negative value)"
+                onChange={(e) => updateOptometricData('pra', e.target.value ? parseFloat(e.target.value) : null)}
               />
             </div>
           </div>
+
+          {/* Convergence Tests */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="npc">14. NPC (cm)</Label>
+              <Input
+                id="npc"
+                type="number"
+                step="0.5"
+                placeholder="Near Point of Convergence"
+                onChange={(e) => updateOptometricData('npc', e.target.value ? parseFloat(e.target.value) : null)}
+              />
+            </div>
+            <div>
+              <Label htmlFor="amplitudeAccommodation">15. Amplitude of Accommodation (D)</Label>
+              <Input
+                id="amplitudeAccommodation"
+                type="number"
+                step="0.25"
+                placeholder="Accommodation amplitude"
+                onChange={(e) => updateOptometricData('amplitudeAccommodation', e.target.value ? parseFloat(e.target.value) : null)}
+              />
+            </div>
+          </div>
+
+          {/* Toggle Analysis View */}
+          <div className="pt-4 border-t">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowOptometricAnalysis(!showOptometricAnalysis)}
+              className="flex items-center gap-2"
+            >
+              <BarChart3 className="h-4 w-4" />
+              {showOptometricAnalysis ? 'ซ่อน' : 'แสดง'} การวิเคราะห์ Binocular Vision
+            </Button>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Optometric Analysis */}
+      {showOptometricAnalysis && (
+        <OptometricAnalysis data={optometricData} />
+      )}
 
       {/* IOP & BP */}
       <Card>
