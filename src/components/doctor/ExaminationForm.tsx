@@ -260,7 +260,7 @@ const ExaminationForm: React.FC<ExaminationFormProps> = ({
                   />
                 </div>
                 <div>
-                  <Label htmlFor="leftC<Content continues_right>ylinder">Cylinder</Label>
+                  <Label htmlFor="leftCylinder">Cylinder</Label>
                   <Input
                     id="leftCylinder"
                     type="number"
@@ -308,10 +308,10 @@ const ExaminationForm: React.FC<ExaminationFormProps> = ({
               />
             </div>
             <div>
-              <Label htmlFor="phoriaDistance">5. Phoria Distance</Label>
+              <Label htmlFor="phoria">5. Phoria Distance</Label>
               <Input
-                id="phoriaDistance"
-                {...register('phoriaDistance')}
+                id="phoria"
+                {...register('phoria')}
                 placeholder="Distance phoria"
               />
             </div>
