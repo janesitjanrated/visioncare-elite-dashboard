@@ -1,259 +1,692 @@
--- Create database (run this first)
--- CREATE DATABASE visualDB;
+-- VisionCare Elite Dashboard Database Schema
+-- Generated from database.csv structure
 
--- Connect to the database
--- \c visualDB;
+-- Enable UUID extension
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- Users table
-CREATE TABLE IF NOT EXISTS users (
-    id SERIAL PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL,
-    name VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+-- Create custom enums
+CREATE TYPE appointment_status_enum AS ENUM ('booked', 'confirmed', 'in_progress', 'completed', 'cancelled', 'no_show');
+CREATE TYPE entity_status_enum AS ENUM ('active', 'inactive', 'suspended', 'deleted');
+CREATE TYPE glasses_status_enum AS ENUM ('ordered', 'assembling', 'ready', 'delivered', 'cancelled');
+CREATE TYPE lens_status_enum AS ENUM ('ordered', 'in_progress', 'arrived', 'assembled', 'delivered', 'cancelled');
+CREATE TYPE lens_claim_status_enum AS ENUM ('pending', 'approved', 'rejected', 'completed');
+CREATE TYPE payment_status_enum AS ENUM ('pending', 'paid', 'failed', 'refunded', 'cancelled');
+CREATE TYPE subscription_plan_enum AS ENUM ('free', 'basic', 'premium', 'enterprise');
+CREATE TYPE tenant_payment_status_enum AS ENUM ('pending', 'paid', 'overdue', 'cancelled');
+CREATE TYPE treatment_status_enum AS ENUM ('scheduled', 'in_progress', 'completed', 'cancelled');
+CREATE TYPE vendor_claim_cycle_status_enum AS ENUM ('open', 'submitted', 'approved', 'paid', 'closed');
+CREATE TYPE gender_enum AS ENUM ('male', 'female', 'other');
+CREATE TYPE customer_note_type_enum AS ENUM ('general', 'medical', 'billing', 'follow_up');
+
+-- Create tables
+CREATE TABLE tenant (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL,
+    subscription_plan subscription_plan_enum DEFAULT 'free',
+    status entity_status_enum DEFAULT 'active',
+    payment_status tenant_payment_status_enum DEFAULT 'pending',
+    plan_started_at TIMESTAMP WITHOUT TIME ZONE,
+    plan_expires_at TIMESTAMP WITHOUT TIME ZONE,
+    last_payment_at TIMESTAMP WITHOUT TIME ZONE,
+    next_billing_at TIMESTAMP WITHOUT TIME ZONE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
 );
 
--- Patients table
-CREATE TABLE IF NOT EXISTS patients (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255),
-    phone VARCHAR(20),
-    date_of_birth DATE,
+CREATE TABLE branch (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    name TEXT NOT NULL,
     address TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    province TEXT,
+    status entity_status_enum DEFAULT 'active',
+    is_deleted BOOLEAN DEFAULT false,
+    UNIQUE(tenant_id, name)
 );
 
--- Appointments table
-CREATE TABLE IF NOT EXISTS appointments (
-    id SERIAL PRIMARY KEY,
-    patient_id INTEGER REFERENCES patients(id) ON DELETE CASCADE,
-    appointment_date TIMESTAMP NOT NULL,
-    notes TEXT,
-    status VARCHAR(50) DEFAULT 'scheduled',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE user (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    email TEXT NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    name TEXT,
+    last_login TIMESTAMP WITHOUT TIME ZONE,
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
 );
 
--- Exam Forms table
-CREATE TABLE IF NOT EXISTS exam_forms (
-    id SERIAL PRIMARY KEY,
-    patient_id INTEGER REFERENCES patients(id) ON DELETE CASCADE,
-    appointment_id INTEGER REFERENCES appointments(id) ON DELETE SET NULL,
-    exam_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    doctor_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    status VARCHAR(50) DEFAULT 'completed',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE role (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL UNIQUE,
+    description TEXT
 );
 
--- Patient Info Section
-CREATE TABLE IF NOT EXISTS exam_patient_info (
-    id SERIAL PRIMARY KEY,
-    exam_form_id INTEGER REFERENCES exam_forms(id) ON DELETE CASCADE UNIQUE,
-    chief_complaint TEXT,
-    present_illness TEXT,
-    past_medical_history TEXT,
-    family_history TEXT,
-    social_history TEXT,
-    medications TEXT,
+CREATE TABLE permission (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT NOT NULL UNIQUE,
+    description TEXT
+);
+
+CREATE TABLE role_permission (
+    role_id UUID REFERENCES role(id),
+    permission_id UUID REFERENCES permission(id),
+    PRIMARY KEY (role_id, permission_id)
+);
+
+CREATE TABLE user_tenant (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES user(id),
+    tenant_id UUID REFERENCES tenant(id),
+    role_id UUID REFERENCES role(id),
+    status TEXT DEFAULT 'active',
+    joined_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    UNIQUE(user_id, tenant_id)
+);
+
+CREATE TABLE user_branch_assign (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES user(id),
+    branch_id UUID REFERENCES branch(id),
+    position TEXT,
+    permission_level TEXT DEFAULT 'staff',
+    UNIQUE(user_id, branch_id)
+);
+
+CREATE TABLE customer (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    name TEXT,
+    phone TEXT,
+    email TEXT NOT NULL,
+    dob DATE,
+    gender gender_enum,
+    address TEXT,
+    emergency_contact TEXT,
+    medical_history TEXT,
     allergies TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    segment TEXT,
+    created_by UUID REFERENCES user(id),
+    updated_by UUID REFERENCES user(id),
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    deleted_at TIMESTAMP WITHOUT TIME ZONE,
+    is_deleted BOOLEAN DEFAULT false,
+    UNIQUE(tenant_id, phone),
+    UNIQUE(tenant_id, name)
 );
 
--- Visual Acuity Section
-CREATE TABLE IF NOT EXISTS exam_visual_acuity (
-    id SERIAL PRIMARY KEY,
-    exam_form_id INTEGER REFERENCES exam_forms(id) ON DELETE CASCADE UNIQUE,
-    right_eye_unaided VARCHAR(20),
-    left_eye_unaided VARCHAR(20),
-    right_eye_aided VARCHAR(20),
-    left_eye_aided VARCHAR(20),
-    right_eye_pinhole VARCHAR(20),
-    left_eye_pinhole VARCHAR(20),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE doctor (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES user(id) UNIQUE,
+    branch_id UUID REFERENCES branch(id),
+    specialization TEXT,
+    license_number TEXT,
+    status entity_status_enum DEFAULT 'active',
+    is_deleted BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
 );
 
--- Refraction Section
-CREATE TABLE IF NOT EXISTS exam_refraction (
-    id SERIAL PRIMARY KEY,
-    exam_form_id INTEGER REFERENCES exam_forms(id) ON DELETE CASCADE UNIQUE,
-    right_eye_sphere DECIMAL(4,2),
-    right_eye_cylinder DECIMAL(4,2),
-    right_eye_axis INTEGER,
-    right_eye_add DECIMAL(4,2),
-    left_eye_sphere DECIMAL(4,2),
-    left_eye_cylinder DECIMAL(4,2),
-    left_eye_axis INTEGER,
-    left_eye_add DECIMAL(4,2),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Slit Lamp Section
-CREATE TABLE IF NOT EXISTS exam_slit_lamp (
-    id SERIAL PRIMARY KEY,
-    exam_form_id INTEGER REFERENCES exam_forms(id) ON DELETE CASCADE UNIQUE,
-    right_eye_anterior_segment TEXT,
-    left_eye_anterior_segment TEXT,
-    right_eye_cornea TEXT,
-    left_eye_cornea TEXT,
-    right_eye_iris TEXT,
-    left_eye_iris TEXT,
-    right_eye_lens TEXT,
-    left_eye_lens TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Fundus Exam Section
-CREATE TABLE IF NOT EXISTS exam_fundus (
-    id SERIAL PRIMARY KEY,
-    exam_form_id INTEGER REFERENCES exam_forms(id) ON DELETE CASCADE UNIQUE,
-    right_eye_retina TEXT,
-    left_eye_retina TEXT,
-    right_eye_optic_nerve TEXT,
-    left_eye_optic_nerve TEXT,
-    right_eye_macula TEXT,
-    left_eye_macula TEXT,
-    right_eye_vessels TEXT,
-    left_eye_vessels TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Diagnosis Section
-CREATE TABLE IF NOT EXISTS exam_diagnosis (
-    id SERIAL PRIMARY KEY,
-    exam_form_id INTEGER REFERENCES exam_forms(id) ON DELETE CASCADE UNIQUE,
-    primary_diagnosis TEXT,
-    secondary_diagnosis TEXT,
-    differential_diagnosis TEXT,
-    treatment_plan TEXT,
-    follow_up_plan TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Employees table
-CREATE TABLE IF NOT EXISTS employees (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
-    phone VARCHAR(20),
-    position VARCHAR(100),
-    salary DECIMAL(10,2),
-    hire_date DATE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- Inventory table
-CREATE TABLE IF NOT EXISTS inventory (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+CREATE TABLE appointment_type (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    name TEXT,
     description TEXT,
-    quantity INTEGER DEFAULT 0,
-    unit_price DECIMAL(10,2),
-    category VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    duration_minutes INTEGER,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
 );
 
--- Orders table
-CREATE TABLE IF NOT EXISTS orders (
-    id SERIAL PRIMARY KEY,
-    patient_id INTEGER REFERENCES patients(id) ON DELETE SET NULL,
-    order_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(50) DEFAULT 'pending',
-    total_amount DECIMAL(10,2),
+CREATE TABLE appointment (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    customer_id UUID REFERENCES customer(id),
+    branch_id UUID REFERENCES branch(id),
+    doctor_id UUID REFERENCES doctor(id),
+    type_id UUID REFERENCES appointment_type(id),
+    status appointment_status_enum DEFAULT 'booked',
+    scheduled_at TIMESTAMP WITHOUT TIME ZONE,
+    duration_minutes INTEGER,
     notes TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    external_ref TEXT,
+    is_deleted BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
 );
 
--- Order items table
-CREATE TABLE IF NOT EXISTS order_items (
-    id SERIAL PRIMARY KEY,
-    order_id INTEGER REFERENCES orders(id) ON DELETE CASCADE,
-    inventory_id INTEGER REFERENCES inventory(id) ON DELETE SET NULL,
-    quantity INTEGER NOT NULL,
-    unit_price DECIMAL(10,2) NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE doctor_schedule (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    doctor_id UUID REFERENCES doctor(id),
+    branch_id UUID REFERENCES branch(id),
+    day_of_week INTEGER,
+    start_time TIME WITHOUT TIME ZONE,
+    end_time TIME WITHOUT TIME ZONE,
+    is_available BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    UNIQUE(doctor_id, day_of_week, start_time, end_time)
 );
 
--- Insert sample data
-INSERT INTO users (email, password, name) VALUES 
-('admin@clinic.com', 'admin123', 'Admin User'),
-('doctor@clinic.com', 'doctor123', 'Dr. Smith');
+CREATE TABLE branch_slot_template (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    branch_id UUID REFERENCES branch(id),
+    day_of_week INTEGER,
+    total_slot INTEGER NOT NULL
+);
 
-INSERT INTO patients (name, email, phone, date_of_birth, address) VALUES 
-('John Doe', 'john@example.com', '0812345678', '1990-01-15', '123 Main St, Bangkok'),
-('Jane Smith', 'jane@example.com', '0898765432', '1985-05-20', '456 Oak Ave, Chiang Mai'),
-('Somchai Jaidee', 'somchai@example.com', '0811111111', '1975-03-10', '789 Sukhumvit Rd, Bangkok'),
-('Naree Wong', 'naree@example.com', '0822222222', '1988-07-25', '321 Silom Rd, Bangkok');
+CREATE TABLE service_category (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    name TEXT NOT NULL,
+    description TEXT,
+    status entity_status_enum DEFAULT 'active',
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
 
-INSERT INTO employees (name, email, phone, position, salary, hire_date) VALUES 
-('Dr. Somchai', 'somchai@clinic.com', '0811111111', 'Ophthalmologist', 80000.00, '2023-01-15'),
-('Nurse Naree', 'naree@clinic.com', '0822222222', 'Nurse', 35000.00, '2023-02-01');
+CREATE TABLE service (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    category_id UUID REFERENCES service_category(id),
+    name TEXT NOT NULL,
+    description TEXT,
+    price NUMERIC,
+    duration_minutes INTEGER,
+    status entity_status_enum DEFAULT 'active',
+    is_deleted BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
 
-INSERT INTO inventory (name, description, quantity, unit_price, category) VALUES 
-('Contact Lenses', 'Daily disposable contact lenses', 100, 150.00, 'Lenses'),
-('Eye Drops', 'Artificial tears eye drops', 50, 80.00, 'Medication'),
-('Glasses Frames', 'Metal frame glasses', 30, 1200.00, 'Frames');
+CREATE TABLE product_cost (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    service_id UUID REFERENCES service(id),
+    branch_id UUID REFERENCES branch(id),
+    cost_price NUMERIC NOT NULL,
+    effective_date TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    UNIQUE(service_id, branch_id, effective_date)
+);
 
--- Insert sample exam forms
-INSERT INTO exam_forms (patient_id, doctor_id, exam_date, status) VALUES 
-(1, 2, '2024-01-15 09:00:00', 'completed'),
-(2, 2, '2024-01-16 10:30:00', 'completed'),
-(3, 2, '2024-01-17 14:00:00', 'completed'),
-(4, 2, '2024-01-18 11:15:00', 'completed');
+CREATE TABLE payment_method (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    name TEXT,
+    description TEXT,
+    gateway_identifier TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
 
--- Insert sample patient info
-INSERT INTO exam_patient_info (exam_form_id, chief_complaint, present_illness, past_medical_history) VALUES 
-(1, 'Blurred vision in right eye', 'Patient reports gradual vision loss over 6 months', 'No significant medical history'),
-(2, 'Eye strain and headaches', 'Patient works long hours on computer', 'Mild myopia diagnosed 5 years ago'),
-(3, 'Redness and irritation in left eye', 'Started 2 days ago, worse in morning', 'Seasonal allergies'),
-(4, 'Difficulty reading small print', 'Progressive difficulty with near vision', 'No previous eye problems');
+CREATE TABLE invoice (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    customer_id UUID REFERENCES customer(id),
+    branch_id UUID REFERENCES branch(id),
+    total_amount NUMERIC,
+    vat_amount NUMERIC DEFAULT 0,
+    is_vat_included BOOLEAN DEFAULT true,
+    payment_status payment_status_enum,
+    payment_method_id UUID REFERENCES payment_method(id),
+    external_ref TEXT,
+    income_category TEXT,
+    is_deleted BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
 
--- Insert sample visual acuity
-INSERT INTO exam_visual_acuity (exam_form_id, right_eye_unaided, left_eye_unaided, right_eye_aided, left_eye_aided) VALUES 
-(1, '20/200', '20/40', '20/20', '20/20'),
-(2, '20/100', '20/100', '20/20', '20/20'),
-(3, '20/20', '20/60', '20/20', '20/20'),
-(4, '20/30', '20/30', '20/20', '20/20');
+CREATE TABLE invoice_item (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    invoice_id UUID REFERENCES invoice(id),
+    service_id UUID REFERENCES service(id),
+    quantity INTEGER,
+    unit_price NUMERIC,
+    total_price NUMERIC,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
 
--- Insert sample refraction
-INSERT INTO exam_refraction (exam_form_id, right_eye_sphere, right_eye_cylinder, right_eye_axis, left_eye_sphere, left_eye_cylinder, left_eye_axis) VALUES 
-(1, -2.50, -0.75, 90, -1.25, -0.50, 85),
-(2, -3.00, -1.00, 95, -2.75, -0.75, 90),
-(3, +0.25, 0.00, 0, +1.50, -0.25, 180),
-(4, +1.75, 0.00, 0, +1.50, 0.00, 0);
+CREATE TABLE treatment (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    customer_id UUID REFERENCES customer(id),
+    service_id UUID REFERENCES service(id),
+    branch_id UUID REFERENCES branch(id),
+    doctor_id UUID REFERENCES doctor(id),
+    treatment_date TIMESTAMP WITHOUT TIME ZONE,
+    notes TEXT,
+    status treatment_status_enum DEFAULT 'completed',
+    is_deleted BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
 
--- Insert sample slit lamp findings
-INSERT INTO exam_slit_lamp (exam_form_id, right_eye_anterior_segment, left_eye_anterior_segment, right_eye_cornea, left_eye_cornea) VALUES 
-(1, 'Normal', 'Normal', 'Clear', 'Clear'),
-(2, 'Normal', 'Normal', 'Clear', 'Clear'),
-(3, 'Normal', 'Conjunctival injection', 'Clear', 'Clear'),
-(4, 'Normal', 'Normal', 'Clear', 'Clear');
+CREATE TABLE lens_unit (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    branch_id UUID REFERENCES branch(id),
+    invoice_item_id UUID REFERENCES invoice_item(id),
+    prescription_left TEXT,
+    prescription_right TEXT,
+    lens_model TEXT,
+    order_type TEXT DEFAULT 'normal',
+    vendor_name TEXT,
+    current_status lens_status_enum DEFAULT 'ordered',
+    expected_arrival DATE,
+    arrived_at TIMESTAMP WITHOUT TIME ZONE,
+    assembled_at TIMESTAMP WITHOUT TIME ZONE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
 
--- Insert sample fundus findings
-INSERT INTO exam_fundus (exam_form_id, right_eye_retina, left_eye_retina, right_eye_optic_nerve, left_eye_optic_nerve) VALUES 
-(1, 'Normal', 'Normal', 'Pink, well-defined', 'Pink, well-defined'),
-(2, 'Normal', 'Normal', 'Pink, well-defined', 'Pink, well-defined'),
-(3, 'Normal', 'Normal', 'Pink, well-defined', 'Pink, well-defined'),
-(4, 'Normal', 'Normal', 'Pink, well-defined', 'Pink, well-defined');
+CREATE TABLE glasses_unit (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    customer_id UUID REFERENCES customer(id),
+    branch_id UUID REFERENCES branch(id),
+    frame_product_id UUID,
+    lens_left_id UUID REFERENCES lens_unit(id),
+    lens_right_id UUID REFERENCES lens_unit(id),
+    status glasses_status_enum DEFAULT 'assembling',
+    assembled_at TIMESTAMP WITHOUT TIME ZONE,
+    delivered_at TIMESTAMP WITHOUT TIME ZONE,
+    notified_at TIMESTAMP WITHOUT TIME ZONE,
+    created_by UUID REFERENCES user(id),
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
 
--- Insert sample diagnosis
-INSERT INTO exam_diagnosis (exam_form_id, primary_diagnosis, treatment_plan, follow_up_plan) VALUES 
-(1, 'Cataract, right eye', 'Surgical removal of cataract', 'Follow up in 1 month'),
-(2, 'Myopia', 'Prescription glasses', 'Annual eye exam'),
-(3, 'Allergic conjunctivitis', 'Antihistamine eye drops', 'Follow up in 1 week'),
-(4, 'Presbyopia', 'Reading glasses', 'Annual eye exam');
+CREATE TABLE lens_claim_request (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    lens_unit_id UUID REFERENCES lens_unit(id),
+    customer_id UUID REFERENCES customer(id),
+    reason TEXT,
+    claim_date DATE DEFAULT CURRENT_DATE,
+    refund_amount NUMERIC,
+    vendor_response TEXT,
+    status lens_claim_status_enum DEFAULT 'pending',
+    created_by UUID REFERENCES user(id),
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE expense (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    branch_id UUID REFERENCES branch(id),
+    category TEXT,
+    expense_type TEXT,
+    amount NUMERIC NOT NULL,
+    paid_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    description TEXT,
+    created_by UUID REFERENCES user(id)
+);
+
+CREATE TABLE expense_recurring (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    branch_id UUID REFERENCES branch(id),
+    name TEXT,
+    amount NUMERIC,
+    due_day INTEGER,
+    category TEXT,
+    auto_notify BOOLEAN DEFAULT true,
+    active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE asset (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    branch_id UUID REFERENCES branch(id),
+    name TEXT,
+    value NUMERIC,
+    acquired_at TIMESTAMP WITHOUT TIME ZONE,
+    status entity_status_enum DEFAULT 'active'
+);
+
+CREATE TABLE liability (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    branch_id UUID REFERENCES branch(id),
+    name TEXT,
+    value NUMERIC,
+    due_date DATE,
+    status entity_status_enum DEFAULT 'active'
+);
+
+CREATE TABLE equity (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    value NUMERIC,
+    source TEXT,
+    recorded_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE business_loan (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    branch_id UUID REFERENCES branch(id),
+    lender_name TEXT NOT NULL,
+    loan_amount NUMERIC NOT NULL,
+    interest_rate DOUBLE PRECISION DEFAULT 0,
+    start_date DATE,
+    due_date DATE,
+    status TEXT DEFAULT 'active',
+    notes TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE loan_schedule (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    loan_id UUID REFERENCES business_loan(id),
+    due_date DATE,
+    principal NUMERIC,
+    interest NUMERIC,
+    total_payment NUMERIC,
+    paid BOOLEAN DEFAULT false,
+    paid_at TIMESTAMP WITHOUT TIME ZONE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE employee_salary (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES user(id),
+    base_salary NUMERIC NOT NULL,
+    bonus NUMERIC DEFAULT 0,
+    payroll_date DATE NOT NULL,
+    payment_status TEXT DEFAULT 'pending',
+    notes TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE staff_attendance_log (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES user(id),
+    branch_id UUID REFERENCES branch(id),
+    date DATE,
+    type TEXT,
+    hours DOUBLE PRECISION,
+    reason TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE owner_withdrawal (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    owner_id UUID REFERENCES user(id),
+    amount NUMERIC NOT NULL,
+    type TEXT DEFAULT 'personal',
+    reason TEXT,
+    withdrawn_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE purchase_invoice (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    vendor_name TEXT,
+    amount NUMERIC,
+    vat NUMERIC,
+    total NUMERIC,
+    paid_at TIMESTAMP WITHOUT TIME ZONE,
+    branch_id UUID REFERENCES branch(id),
+    external_ref TEXT,
+    created_by UUID REFERENCES user(id)
+);
+
+CREATE TABLE withholding_tax (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    payer_id UUID REFERENCES user(id),
+    payee_name TEXT,
+    amount NUMERIC,
+    tax_percent DOUBLE PRECISION,
+    tax_amount NUMERIC,
+    payment_date DATE,
+    document_ref TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE cash_snapshot (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    date DATE NOT NULL,
+    cash_on_hand NUMERIC NOT NULL,
+    notes TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE balance_sheet_summary (
+    tenant_id UUID REFERENCES tenant(id),
+    total_assets NUMERIC,
+    total_liabilities NUMERIC,
+    total_equity NUMERIC
+);
+
+CREATE TABLE kpi_snapshot (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    branch_id UUID REFERENCES branch(id),
+    week_start DATE,
+    revenue NUMERIC,
+    cost NUMERIC,
+    utilization_percent DOUBLE PRECISION,
+    no_show_percent DOUBLE PRECISION,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE course_category (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    name TEXT,
+    description TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE course_package (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    category_id UUID REFERENCES course_category(id),
+    name TEXT,
+    description TEXT,
+    price NUMERIC,
+    total_session INTEGER,
+    validity_days INTEGER,
+    status entity_status_enum DEFAULT 'active',
+    is_deleted BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE course_service (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    package_id UUID REFERENCES course_package(id),
+    service_id UUID REFERENCES service(id),
+    required_sessions INTEGER,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE customer_course (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    customer_id UUID REFERENCES customer(id),
+    package_id UUID REFERENCES course_package(id),
+    branch_id UUID REFERENCES branch(id),
+    purchased_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    start_date DATE,
+    end_date DATE,
+    remaining_sessions INTEGER,
+    status entity_status_enum DEFAULT 'active',
+    transaction_id TEXT,
+    notes TEXT,
+    created_by UUID REFERENCES user(id),
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE customer_note (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    customer_id UUID REFERENCES customer(id),
+    created_by UUID REFERENCES user(id),
+    type customer_note_type_enum,
+    content TEXT,
+    sentiment_score DOUBLE PRECISION,
+    keyword_tag TEXT[],
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE follow_up_log (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    customer_id UUID REFERENCES customer(id),
+    method TEXT,
+    staff_id UUID REFERENCES user(id),
+    result TEXT,
+    note TEXT,
+    next_follow_date DATE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE invoice_follow_up (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    invoice_id UUID REFERENCES invoice(id),
+    follow_up_date DATE NOT NULL,
+    result TEXT,
+    note TEXT,
+    staff_id UUID REFERENCES user(id),
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE crm_task_assign (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    customer_id UUID REFERENCES customer(id),
+    assigned_to UUID REFERENCES user(id),
+    priority TEXT DEFAULT 'medium',
+    status TEXT DEFAULT 'open',
+    due_date DATE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE campaign_log (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    customer_id UUID REFERENCES customer(id),
+    campaign_name TEXT,
+    sent_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now(),
+    channel TEXT,
+    result TEXT
+);
+
+CREATE TABLE vendor_claim_cycle (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    vendor_name TEXT,
+    cycle_code TEXT,
+    start_date DATE,
+    end_date DATE,
+    total_claim_amount NUMERIC,
+    status vendor_claim_cycle_status_enum DEFAULT 'open',
+    refund_expected_date DATE,
+    refund_received_date DATE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE audit_log (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES user(id),
+    action TEXT,
+    module TEXT,
+    old_data JSONB,
+    new_data JSONB,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE ai_audit_log (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES user(id),
+    prompt TEXT,
+    gpt_response TEXT,
+    module TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE chat_integration_config (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    branch_id UUID REFERENCES branch(id),
+    platform TEXT,
+    channel_id TEXT,
+    access_token TEXT,
+    secret_key TEXT,
+    webhook_url TEXT,
+    config_json JSONB,
+    active BOOLEAN DEFAULT true,
+    created_by UUID REFERENCES user(id),
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE chat_log (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    branch_id UUID REFERENCES branch(id),
+    platform TEXT,
+    sender TEXT,
+    receiver TEXT,
+    message TEXT,
+    is_bot BOOLEAN,
+    is_fallback BOOLEAN,
+    received_at TIMESTAMP WITHOUT TIME ZONE,
+    responded_at TIMESTAMP WITHOUT TIME ZONE,
+    response_time_secs INTEGER
+);
+
+CREATE TABLE onboarding_status (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    step TEXT,
+    completed BOOLEAN DEFAULT false,
+    completed_at TIMESTAMP WITHOUT TIME ZONE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
+
+CREATE TABLE tenant_config_flag (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    tenant_id UUID REFERENCES tenant(id),
+    flag TEXT,
+    value BOOLEAN DEFAULT false,
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT now()
+);
 
 -- Create indexes for better performance
-CREATE INDEX IF NOT EXISTS idx_patients_email ON patients(email);
-CREATE INDEX IF NOT EXISTS idx_appointments_patient_id ON appointments(patient_id);
-CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(appointment_date);
-CREATE INDEX IF NOT EXISTS idx_orders_patient_id ON orders(patient_id);
-CREATE INDEX IF NOT EXISTS idx_inventory_category ON inventory(category);
-CREATE INDEX IF NOT EXISTS idx_exam_forms_patient_id ON exam_forms(patient_id);
-CREATE INDEX IF NOT EXISTS idx_exam_forms_date ON exam_forms(exam_date); 
+CREATE INDEX idx_customer_tenant_id ON customer(tenant_id);
+CREATE INDEX idx_customer_phone ON customer(phone);
+CREATE INDEX idx_customer_email ON customer(email);
+CREATE INDEX idx_appointment_customer_id ON appointment(customer_id);
+CREATE INDEX idx_appointment_branch_id ON appointment(branch_id);
+CREATE INDEX idx_appointment_scheduled_at ON appointment(scheduled_at);
+CREATE INDEX idx_invoice_customer_id ON invoice(customer_id);
+CREATE INDEX idx_invoice_branch_id ON invoice(branch_id);
+CREATE INDEX idx_expense_tenant_id ON expense(tenant_id);
+CREATE INDEX idx_expense_branch_id ON expense(branch_id);
+CREATE INDEX idx_user_tenant_user_id ON user_tenant(user_id);
+CREATE INDEX idx_user_tenant_tenant_id ON user_tenant(tenant_id);
+CREATE INDEX idx_user_branch_assign_user_id ON user_branch_assign(user_id);
+CREATE INDEX idx_user_branch_assign_branch_id ON user_branch_assign(branch_id);
+
+-- Insert default data
+INSERT INTO role (name, description) VALUES 
+('admin', 'System administrator with full access'),
+('manager', 'Branch manager with limited administrative access'),
+('staff', 'Regular staff member'),
+('doctor', 'Medical professional');
+
+INSERT INTO permission (name, description) VALUES 
+('read_patients', 'View patient information'),
+('write_patients', 'Create and edit patient records'),
+('read_appointments', 'View appointment schedules'),
+('write_appointments', 'Create and edit appointments'),
+('read_finance', 'View financial reports'),
+('write_finance', 'Manage financial records'),
+('read_inventory', 'View inventory status'),
+('write_inventory', 'Manage inventory'),
+('read_reports', 'View system reports'),
+('write_reports', 'Generate and export reports'),
+('manage_users', 'Manage user accounts and permissions'),
+('manage_settings', 'Manage system settings');
+
+-- Link admin role to all permissions
+INSERT INTO role_permission (role_id, permission_id)
+SELECT r.id, p.id FROM role r, permission p 
+WHERE r.name = 'admin';
+
+-- Link manager role to most permissions (except user management)
+INSERT INTO role_permission (role_id, permission_id)
+SELECT r.id, p.id FROM role r, permission p 
+WHERE r.name = 'manager' AND p.name != 'manage_users';
+
+-- Link staff role to basic permissions
+INSERT INTO role_permission (role_id, permission_id)
+SELECT r.id, p.id FROM role r, permission p 
+WHERE r.name = 'staff' AND p.name IN ('read_patients', 'write_patients', 'read_appointments', 'write_appointments', 'read_inventory');
+
+-- Link doctor role to medical permissions
+INSERT INTO role_permission (role_id, permission_id)
+SELECT r.id, p.id FROM role r, permission p 
+WHERE r.name = 'doctor' AND p.name IN ('read_patients', 'write_patients', 'read_appointments', 'write_appointments', 'read_reports');
+
+INSERT INTO payment_method (name, description) VALUES 
+('Cash', 'Cash payment'),
+('Credit Card', 'Credit card payment'),
+('Bank Transfer', 'Bank transfer payment'),
+('Mobile Banking', 'Mobile banking payment'),
+('Cheque', 'Cheque payment');
