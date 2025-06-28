@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { apiClient, Appointment as ApiAppointment } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
@@ -6,13 +7,20 @@ export interface Appointment {
   id: number;
   patient_id: number;
   appointment_date: string;
+  appointment_time?: string;
   notes?: string;
   status: string;
+  queue_number?: number;
+  chief_complaint?: string;
   created_at: string;
   // Relations
   patients?: {
     name: string;
+    full_name?: string;
     phone?: string;
+  };
+  branches?: {
+    name: string;
   };
 }
 

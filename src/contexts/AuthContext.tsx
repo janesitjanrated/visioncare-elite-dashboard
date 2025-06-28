@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { apiClient, User, AuthResponse } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
@@ -8,6 +9,7 @@ interface AuthContextType {
   apiError: string | null;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, name: string) => Promise<{ error: string | null }>;
+  signInWithGoogle: () => Promise<void>;
   signOut: () => void;
 }
 
@@ -118,6 +120,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const signInWithGoogle = async () => {
+    try {
+      setLoading(true);
+      // TODO: Implement Google Sign-In logic
+      toast({
+        title: "Google Sign-In",
+        description: "Google Sign-In ยังไม่ได้ใช้งาน",
+        variant: "destructive",
+      });
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const signOut = () => {
     setUser(null);
     localStorage.removeItem('user');
@@ -133,6 +151,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     apiError,
     signIn,
     signUp,
+    signInWithGoogle,
     signOut,
   };
 

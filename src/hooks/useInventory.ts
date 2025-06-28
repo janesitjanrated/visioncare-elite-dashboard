@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
@@ -7,9 +8,16 @@ export interface InventoryItem {
   name: string;
   description?: string;
   quantity: number;
+  current_stock?: number;
+  reorder_point?: number;
+  minimum_stock?: number;
   unit_price: number;
   category?: string;
   created_at: string;
+  // Relations
+  products?: {
+    name: string;
+  };
 }
 
 export const useInventory = () => {

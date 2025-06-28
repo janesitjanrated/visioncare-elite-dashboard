@@ -39,10 +39,7 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     
-    const { error } = await signUp(email, password, {
-      full_name: fullName,
-      role: 'doctor',
-    });
+    const { error } = await signUp(email, password, fullName);
     
     setLoading(false);
   };

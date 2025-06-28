@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { apiClient } from '@/integrations/api/client';
 import { useToast } from '@/hooks/use-toast';
@@ -6,13 +7,17 @@ export interface Order {
   id: number;
   patient_id?: number;
   order_date: string;
+  order_number?: string;
   status: string;
   total_amount: number;
+  payment_status?: string;
+  expected_delivery?: string;
   notes?: string;
   created_at: string;
   // Relations
   patients?: {
     name: string;
+    full_name?: string;
     phone?: string;
   };
   order_items?: OrderItem[];
@@ -22,6 +27,7 @@ export interface OrderItem {
   id: number;
   order_id: number;
   inventory_id?: number;
+  item_name?: string;
   quantity: number;
   unit_price: number;
   created_at: string;
