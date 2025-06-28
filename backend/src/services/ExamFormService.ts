@@ -1,6 +1,6 @@
 
 import { ExamFormRepository } from '../repositories/ExamFormRepository';
-import { ExamForm, ExamFormCreateRequest, PatientInfo, VisualAcuity, Refraction, Diagnosis } from '../models/ExamForm';
+import { ExamForm, ExamFormCreateRequest, PatientInfo, VisualAcuity, Refraction, SlitLamp, Fundus, Diagnosis } from '../models/ExamForm';
 
 export class ExamFormService {
   constructor(private examFormRepository: ExamFormRepository) {}
@@ -20,6 +20,8 @@ export class ExamFormService {
     const patientInfo = await this.examFormRepository.findPatientInfo(id);
     const visualAcuity = await this.examFormRepository.findVisualAcuity(id);
     const refraction = await this.examFormRepository.findRefraction(id);
+    const slitLamp = await this.examFormRepository.findSlitLamp(id);
+    const fundus = await this.examFormRepository.findFundus(id);
     const diagnosis = await this.examFormRepository.findDiagnosis(id);
 
     return {
@@ -27,6 +29,8 @@ export class ExamFormService {
       patient_info: patientInfo,
       visual_acuity: visualAcuity,
       refraction: refraction,
+      slit_lamp: slitLamp,
+      fundus: fundus,
       diagnosis: diagnosis
     };
   }
@@ -49,6 +53,14 @@ export class ExamFormService {
 
   async updateRefraction(examFormId: number, refraction: Omit<Refraction, 'id' | 'exam_form_id'>): Promise<Refraction> {
     return await this.examFormRepository.upsertRefraction({ ...refraction, exam_form_id: examFormId });
+  }
+
+  async updateSlitLamp(examFormId: number, slitLamp: Omit<SlitLamp, 'id' | 'exam_form_id'>): Promise<SlitLamp> {
+    return await this.examFormRepository.upsertSlitLamp({ ...slitLamp, exam_form_id: examFormId });
+  }
+
+  async updateFundus(examFormId: number, fundus: Omit<Fundus, 'id' | 'exam_form_id'>): Promise<Fundus> {
+    return await this.examFormRepository.upsertFundus({ ...fundus, exam_form_id: examFormId });
   }
 
   async updateDiagnosis(examFormId: number, diagnosis: Omit<Diagnosis, 'id' | 'exam_form_id'>): Promise<Diagnosis> {

@@ -86,6 +86,28 @@ export class ExamFormController {
     }
   }
 
+  async updateSlitLamp(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const slitLamp = await this.examFormService.updateSlitLamp(id, req.body);
+      res.json(slitLamp);
+    } catch (error) {
+      console.error('Update slit lamp error:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+
+  async updateFundus(req: Request, res: Response): Promise<void> {
+    try {
+      const id = parseInt(req.params.id);
+      const fundus = await this.examFormService.updateFundus(id, req.body);
+      res.json(fundus);
+    } catch (error) {
+      console.error('Update fundus error:', error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+
   async updateDiagnosis(req: Request, res: Response): Promise<void> {
     try {
       const id = parseInt(req.params.id);

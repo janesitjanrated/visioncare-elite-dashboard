@@ -1,6 +1,6 @@
 
 import { Pool } from 'pg';
-import { ExamForm, PatientInfo, VisualAcuity, Refraction, Diagnosis } from '../models/ExamForm';
+import { ExamForm, PatientInfo, VisualAcuity, Refraction, SlitLamp, Fundus, Diagnosis } from '../models/ExamForm';
 
 export class ExamFormRepository {
   constructor(private pool: Pool) {}
@@ -155,6 +155,78 @@ export class ExamFormRepository {
       refraction.left_eye_cylinder,
       refraction.left_eye_axis,
       refraction.left_eye_add
+    ]);
+    return result.rows[0];
+  }
+
+  // Slit Lamp methods
+  async findSlitLamp(examFormId: number): Promise<SlitLamp | null> {
+    const query = 'SELECT * FROM exam_slit_lamp WHERE exam_form_id = $1';
+    const result = await this.pool.query(query, [examFormId]);
+    return result.rows.length > 0 ? result.rows[0] : null;
+  }
+
+  async upsertSlitLamp(slitLamp: Omit<SlitLamp, 'id'>): Promise<SlitLamp> {
+    const query = `
+      INSERT INTO exam_slit_lamp (exam_form_id, right_eye_anterior_segment, left_eye_anterior_segment, right_eye_cornea, left_eye_cornea, right_eye_iris, left_eye_iris, right_eye_lens, left_eye_lens)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      ON CONFLICT (exam_form_id) DO UPDATE SET
+        right_eye_anterior_segment = EXCLUDED.right_eye_anterior_segment,
+        left_eye_anterior_segment = EXCLUDED.left_eye_anterior_segment,
+        right_eye_cornea = EXCLUDED.right_eye_cornea,
+        left_eye_cornea = EXCLUDED.left_eye_cornea,
+        right_eye_iris = EXCLUDED.right_eye_iris,
+        left_eye_iris = EXCLUDED.left_eye_iris,
+        right_eye_lens = EXCLUDED.right_eye_lens,
+        left_eye_lens = EXCLUDED.left_eye_lens
+      RETURNING *
+    `;
+    const result = await this.pool.query(query, [
+      slitLamp.exam_form_id,
+      slitLamp.right_eye_anterior_segment,
+      slitLamp.left_eye_anterior_segment,
+      slitLamp.right_eye_cornea,
+      slitLamp.left_eye_cornea,
+      slitLamp.right_eye_iris,
+      slitLamp.left_eye_iris,
+      slitLamp.right_eye_lens,
+      slitLamp.left_eye_lens
+    ]);
+    return result.rows[0];
+  }
+
+  // Fundus methods
+  async findFundus(examFormId: number): Promise<Fundus | null> {
+    const query = 'SELECT * FROM exam_fundus WHERE exam_form_id = $1';
+    const result = await this.pool.query(query, [examFormId]);
+    return result.rows.length > 0 ? result.rows[0] : null;
+  }
+
+  async upsertFundus(fundus: Omit<Fundus, 'id'>): Promise<Fundus> {
+    const query = `
+      INSERT INTO exam_fundus (exam_form_id, right_eye_retina, left_eye_retina, right_eye_optic_nerve, left_eye_optic_nerve, right_eye_macula, left_eye_macula, right_eye_vessels, left_eye_vessels)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      ON CONFLICT (exam_form_id) DO UPDATE SET
+        right_eye_retina = EXCLUDED.right_eye_retina,
+        left_eye_retina = EXCLUDED.left_eye_retina,
+        right_eye_optic_nerve = EXCLUDED.right_eye_optic_nerve,
+        left_eye_optic_nerve = EXCLUDED.left_eye_optic_nerve,
+        right_eye_macula = EXCLUDED.right_eye_macula,
+        left_eye_macula = EXCLUDED.left_eye_macula,
+        right_eye_vessels = EXCLUDED.right_eye_vessels,
+        left_eye_vessels = EXCLUDED.left_eye_vessels
+      RETURNING *
+    `;
+    const result = await this.pool.query(query, [
+      fundus.exam_form_id,
+      fundus.right_eye_retina,
+      fundus.left_eye_retina,
+      fundus.right_eye_optic_nerve,
+      fundus.left_eye_optic_nerve,
+      fundus.right_eye_macula,
+      fundus.left_eye_macula,
+      fundus.right_eye_vessels,
+      fundus.left_eye_vessels
     ]);
     return result.rows[0];
   }

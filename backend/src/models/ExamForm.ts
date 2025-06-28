@@ -55,6 +55,32 @@ export interface Refraction {
   left_eye_add: string;
 }
 
+export interface SlitLamp {
+  id?: number;
+  exam_form_id: number;
+  right_eye_anterior_segment: string;
+  left_eye_anterior_segment: string;
+  right_eye_cornea: string;
+  left_eye_cornea: string;
+  right_eye_iris: string;
+  left_eye_iris: string;
+  right_eye_lens: string;
+  left_eye_lens: string;
+}
+
+export interface Fundus {
+  id?: number;
+  exam_form_id: number;
+  right_eye_retina: string;
+  left_eye_retina: string;
+  right_eye_optic_nerve: string;
+  left_eye_optic_nerve: string;
+  right_eye_macula: string;
+  left_eye_macula: string;
+  right_eye_vessels: string;
+  left_eye_vessels: string;
+}
+
 export interface Diagnosis {
   id?: number;
   exam_form_id: number;
@@ -63,4 +89,14 @@ export interface Diagnosis {
   differential_diagnosis: string;
   treatment_plan: string;
   follow_up_plan: string;
+}
+
+// Complete exam form with all sections
+export interface CompleteExamForm extends ExamForm {
+  patient_info?: PatientInfo;
+  visual_acuity?: VisualAcuity;
+  refraction?: Refraction;
+  slit_lamp?: SlitLamp;
+  fundus?: Fundus;
+  diagnosis?: Diagnosis;
 }

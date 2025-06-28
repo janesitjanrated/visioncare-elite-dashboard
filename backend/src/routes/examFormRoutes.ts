@@ -19,6 +19,8 @@ router.post('/', (req, res) => examFormController.createExamForm(req, res));
 router.post('/:id/patient-info', (req, res) => examFormController.updatePatientInfo(req, res));
 router.post('/:id/visual-acuity', (req, res) => examFormController.updateVisualAcuity(req, res));
 router.post('/:id/refraction', (req, res) => examFormController.updateRefraction(req, res));
+router.post('/:id/slit-lamp', (req, res) => examFormController.updateSlitLamp(req, res));
+router.post('/:id/fundus', (req, res) => examFormController.updateFundus(req, res));
 router.post('/:id/diagnosis', (req, res) => examFormController.updateDiagnosis(req, res));
 
 export default router;
