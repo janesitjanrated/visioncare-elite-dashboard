@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Header } from '@/components/Header';
 import { Button } from '@/components/ui/button';
@@ -134,7 +133,7 @@ const NewPatient = () => {
                   <input
                     type="date"
                     name="birthDate"
-                    value={formData.birthDate}
+                    value={formData.birthDate ? formData.birthDate.slice(0, 10) : ""}
                     onChange={handleChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     required

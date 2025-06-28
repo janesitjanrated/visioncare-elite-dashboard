@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -100,7 +99,7 @@ export const ClaimForm = ({ claim, onSave, onClose }: ClaimFormProps) => {
                 <Label>วันที่เคลม</Label>
                 <Input
                   type="date"
-                  value={formData.claimDate}
+                  value={formData.claimDate ? formData.claimDate.slice(0, 10) : ""}
                   onChange={(e) => setFormData({...formData, claimDate: e.target.value})}
                   required
                 />

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -102,7 +101,7 @@ export const TaxForm = ({ onSave, onClose }: TaxFormProps) => {
               <Label>กำหนดยื่น</Label>
               <Input
                 type="date"
-                value={formData.dueDate}
+                value={formData.dueDate ? formData.dueDate.slice(0, 10) : ""}
                 onChange={(e) => setFormData({...formData, dueDate: e.target.value})}
                 required
               />

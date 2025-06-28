@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -117,7 +116,7 @@ export const EmployeeForm = ({ onClose, onSave }) => {
                       <Input
                         id="birthDate"
                         type="date"
-                        value={formData.birthDate}
+                        value={formData.birthDate ? formData.birthDate.slice(0, 10) : ""}
                         onChange={(e) => handleInputChange('birthDate', e.target.value)}
                         required
                       />

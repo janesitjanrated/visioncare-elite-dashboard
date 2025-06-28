@@ -76,10 +76,15 @@ export const PatientDetailView: React.FC<PatientDetailViewProps> = ({ patient, o
 
   function formatDateTime(dateStr?: string) {
     if (!dateStr || typeof dateStr !== 'string') return '-';
-    // ตรวจสอบ pattern YYYY-MM-DD หรือ YYYY-MM-DDTHH:mm:ss
-    if (!/^\d{4}-\d{2}-\d{2}/.test(dateStr)) return '-';
-    const d = new Date(dateStr);
-    return isNaN(d.getTime()) ? '-' : d.toLocaleString('th-TH');
+    
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return '-';
+      return d.toLocaleString('th-TH');
+    } catch (error) {
+      console.error('Error formatting date:', dateStr, error);
+      return '-';
+    }
   }
 
   return (

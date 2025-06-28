@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -100,7 +99,7 @@ export const PendingGlassesForm = ({ glass, onSave, onClose }: PendingGlassesFor
                 <Label>วันที่สั่ง</Label>
                 <Input
                   type="date"
-                  value={formData.orderDate}
+                  value={formData.orderDate ? formData.orderDate.slice(0, 10) : ""}
                   onChange={(e) => setFormData({...formData, orderDate: e.target.value})}
                   required
                 />

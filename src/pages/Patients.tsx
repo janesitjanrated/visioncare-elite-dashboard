@@ -127,7 +127,7 @@ const Patients = () => {
                         <Label>วันเกิด</Label>
                         <Input
                           type="date"
-                          value={newPatient.date_of_birth}
+                          value={newPatient.date_of_birth ? newPatient.date_of_birth.slice(0, 10) : ""}
                           onChange={(e) => setNewPatient({...newPatient, date_of_birth: e.target.value})}
                         />
                       </div>

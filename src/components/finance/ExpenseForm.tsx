@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -75,7 +74,7 @@ export const ExpenseForm = ({ expense, onSave, onClose }: ExpenseFormProps) => {
                 <Label>วันที่</Label>
                 <Input
                   type="date"
-                  value={formData.date}
+                  value={formData.date ? formData.date.slice(0, 10) : ""}
                   onChange={(e) => setFormData({...formData, date: e.target.value})}
                   required
                 />
