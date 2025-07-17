@@ -1,0 +1,19 @@
+@import './fonts.css';
+
+body {
+  margin: 0;
+  margin-top: 24px;
+  padding: 0;
+  font-family: 'Inter', 'Prompt', sans-serif;
+  font-weight: 400;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  line-height: normal;
+  font-family: inherit;
+  margin: unset;
+}

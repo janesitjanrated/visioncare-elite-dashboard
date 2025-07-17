@@ -1,99 +1,167 @@
-# Backend Setup Instructions
+# Solo Optics Oasis – Backend Developer Guide
 
-This backend uses PostgreSQL and Express.js to provide API endpoints for the ocular clinic application.
+---
 
-## Prerequisites
+## 1. System Overview
 
-1. **PostgreSQL** installed and running
-2. **Node.js** and **npm** installed
+### Authentication & Authorization Flow
 
-## Database Setup
+1. **User Login**: ผู้ใช้ส่ง email/password ไปที่ `/auth/login`
+2. **JWT Issuance**: ระบบตอบกลับ access_token (JWT, RS256) + refresh_token (HttpOnly cookie)
+3. **JWT Middleware**: ทุก request ที่ต้องการ auth ต้องแนบ JWT ใน header
+4. **RBAC Middleware**: ตรวจสอบ scope/permission จาก JWT (ไม่ใช้ role ตายตัว)
+5. **orgContext Middleware**: ดึง org_id จาก JWT inject เข้า req ทุกครั้ง
+6. **Service Layer**: ทุก query ต้อง filter ด้วย org_id
+7. **Audit Logging**: ทุก action สำคัญ (CRUD, login, permission change) ต้อง log audit
 
-1. **Start PostgreSQL** and create the database:
-   ```sql
-   CREATE DATABASE visualDB;
-   ```
+---
 
-2. **Connect to the database** and run the schema:
-   ```bash
-   psql -U postgres -d visualDB -f schema.sql
-   ```
+## 2. How to Add a New Endpoint
 
-   Or connect to PostgreSQL and run:
-   ```sql
-   \i schema.sql
-   ```
+1. **Define Schema**
+   - ออกแบบ table schema (PostgreSQL)
+   - เพิ่ม migration script ใน `/supabase/migrations/`
 
-## Backend Configuration
+2. **Write OpenAPI Spec**
+   - ระบุ endpoint, method, parameters, request/response schema
+   - ระบุ error format กลาง (ดูตัวอย่างด้านล่าง)
 
-The database connection is configured in `src/integrations/postgres/client.ts`:
+3. **Implement Code**
+   - สร้างไฟล์ใน `src/features/<feature>/`
+     - controller, service, validation, model, routes
+   - ใช้ Joi หรือ Zod สำหรับ validation
+   - Middleware:
+     - JWT/Session, RBAC, orgContext
+   - Service:
+     - Query ต้อง filter ด้วย org_id
+     - รองรับ embed resource ถ้ามี (เช่น ?embed=patient,staff)
+   - Logging:
+     - logAudit ทุก action สำคัญ
 
-```typescript
-export const pool = new Pool({
-  user: 'postgres',
-  host: 'localhost',
-  database: 'visualDB',
-  password: '592954',
-  port: 4955,
-  ssl: false,
-  connectionTimeoutMillis: 10000
-});
+4. **Write Test**
+   - Unit test (service, validation)
+   - Integration test (endpoint, data isolation, error, audit)
+   - Mock JWT, org_id, DB
+
+5. **Update Docs**
+   - เพิ่ม spec ใน `PRODUCTION_BACKEND_FULL_SPEC.md`
+   - อัพเดต README/dev-docs
+
+---
+
+## 3. How to Test & Run
+
+### Run Development Server
+```bash
+cd backend
+npm install
+npm run dev
 ```
 
-**Update these values** to match your PostgreSQL configuration.
+### Run Tests
+```bash
+npm run test
+```
 
-## Running the Backend
+### Mock JWT/org_id
+- ใช้ mock middleware หรือ JWT test token
+- ตัวอย่าง mock JWT payload:
+  ```json
+  {
+    "sub": "user_id",
+    "org_id": "org_id",
+    "scope": ["patient:read", "appointment:create"],
+    ...
+  }
+  ```
+- ใช้ test DB หรือ in-memory DB สำหรับ integration test
+- มี script สำหรับ seed ข้อมูล
 
-1. **Install dependencies** (if not already done):
-   ```bash
-   npm install
-   ```
+---
 
-2. **Start the development server**:
-   ```bash
-   npm run dev:backend
-   ```
+## 4. Naming Convention & Folder Structure
 
-3. **Build and start production server**:
-   ```bash
-   npm run build:backend
-   npm run start:backend
-   ```
+### Folder Structure
+```
+backend/
+  src/
+    features/
+      <feature>/
+        <feature>.controller.ts
+        <feature>.service.ts
+        <feature>.model.ts
+        <feature>.validation.ts
+        <feature>.routes.ts
+    middlewares/
+    utils/
+    config/
+    server.ts
+```
 
-The server will run on `http://localhost:3001`
+### Naming
+- snake_case สำหรับ DB field
+- camelCase สำหรับ JS/TS
+- ชื่อไฟล์/คลาส/ฟังก์ชันต้องสื่อความหมาย
+- แยกไฟล์ตามชั้น (SRP)
 
-## API Endpoints
+---
 
-### Health Check
-- `GET /api/health` - Test database connection
+## 5. Error Format
 
-### Authentication
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
+ทุก error ต้องใช้ format กลาง:
+```json
+{
+  "success": false,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Name is required",
+    "field": "name"
+  }
+}
+```
+- Error code registry: เก็บไว้ใน enum/constant
+- ทุก endpoint ต้องใช้ code นี้
 
-### Patients
-- `GET /api/patients` - Get all patients
-- `POST /api/patients` - Create new patient
+---
 
-### Appointments
-- `GET /api/appointments` - Get all appointments
-- `POST /api/appointments` - Create new appointment
+## 6. Example: Add New Feature (Step-by-step)
 
-## Sample Users
+1. **สร้าง schema + migration**
+   - เขียน SQL migration ใน `/supabase/migrations/`
+2. **เพิ่ม OpenAPI spec**
+   - ระบุใน `PRODUCTION_BACKEND_FULL_SPEC.md`
+3. **สร้าง controller/service/validation/model/routes**
+   - ใน `src/features/<feature>/`
+4. **เพิ่ม middleware (RBAC, orgContext)**
+   - ระบุ scope ที่ต้องการใน route
+5. **เขียน test (mock JWT/org_id)**
+   - ทดสอบ data isolation, error, audit
+6. **logAudit ทุก action สำคัญ**
+   - เรียก helper logAudit ใน service
+7. **อัพเดต spec + README**
 
-The schema includes sample users for testing:
-- Email: `admin@clinic.com`, Password: `admin123`
-- Email: `doctor@clinic.com`, Password: `doctor123`
+---
 
-## Troubleshooting
+## 7. FAQ
 
-1. **Database connection error**: Check PostgreSQL is running and credentials are correct
-2. **Port already in use**: Change the port in `server.ts` or kill the process using port 3001
-3. **CORS errors**: The server is configured to allow all origins in development
+**Q: จะ mock JWT/org_id ยังไง?**  
+A: ใช้ test token หรือ mock middleware inject req.user/org_id
 
-## Development
+**Q: จะ test data isolation ยังไง?**  
+A: สร้าง user หลาย org, ทดสอบว่าเห็นแต่ข้อมูล org ตัวเอง
 
-To add new endpoints:
-1. Add the route in `server.ts`
-2. Add the corresponding method in `src/integrations/api/client.ts`
-3. Update the frontend components to use the new endpoint 
+**Q: จะ audit/log ยังไง?**  
+A: เรียก logAudit ในทุก action สำคัญ
+
+---
+
+## 8. Reference
+
+- [PRODUCTION_BACKEND_FULL_SPEC.md](./PRODUCTION_BACKEND_FULL_SPEC.md)
+- ตัวอย่าง middleware, audit, embed, error, monitoring, test (ขอเพิ่มได้)
+
+---
+
+**หมายเหตุ:**  
+- ทุก feature ใหม่ต้อง enforce security, org isolation, audit, error format, test  
+- ถ้าสงสัยหรือไม่แน่ใจ flow ให้ถาม reviewer หรือดูตัวอย่างใน spec 

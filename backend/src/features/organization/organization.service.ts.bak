@@ -1,0 +1,80 @@
+import { Organization } from './organization.model';
+import db from '../../config/db';
+import { logAudit } from '../../utils/logger';
+
+interface OrganizationData extends Omit<Organization, 'created_at' | 'updated_at' | 'deleted_at'> {
+  name: string;
+  status?: string;
+}
+
+function convertDates(org: any): Organization {
+  return {
+    ...org,
+    created_at: org.created_at.toISOString(),
+    updated_at: org.updated_at.toISOString(),
+    deleted_at: org.deleted_at?.toISOString() || null
+  };
+}
+
+export async function getOrganizations(filters: any = {}): Promise<Organization[]> {
+  const orgs = await db<Organization>('organization')
+    .where({ ...filters, deleted_at: null });
+  return orgs.map(convertDates);
+}
+
+export async function getOrganizationById(id: string): Promise<Organization | null> {
+  const org = await db<Organization>('organization')
+    .where({ id, deleted_at: null })
+    .first();
+  return org ? convertDates(org) : null;
+}
+
+export async function createOrganization(data: Partial<OrganizationData>, user_id: string): Promise<Organization> {
+  const now = db.fn.now();
+  const [org] = await db<Organization>('organization')
+    .insert({
+      ...data,
+      created_at: now,
+      updated_at: now
+    })
+    .returning('*');
+
+  const converted = convertDates(org);
+  await logAudit('create', 'organization', null, converted, { org_id: org.id, user_id });
+  return converted;
+}
+
+export async function updateOrganization(id: string, data: Partial<OrganizationData>, user_id: string): Promise<Organization | null> {
+  const before = await getOrganizationById(id);
+  if (!before) return null;
+
+  const now = db.fn.now();
+  const [after] = await db<Organization>('organization')
+    .where({ id })
+    .update({
+      ...data,
+      updated_at: now
+    })
+    .returning('*');
+
+  const converted = convertDates(after);
+  await logAudit('update', 'organization', before, converted, { org_id: id, user_id });
+  return converted;
+}
+
+export async function deleteOrganization(id: string, user_id: string): Promise<boolean> {
+  const before = await getOrganizationById(id);
+  if (!before) return false;
+
+  const now = db.fn.now();
+  await db('organization')
+    .where({ id })
+    .update({ 
+      deleted_at: now,
+      updated_at: now
+    });
+
+  // Log the deletion audit
+  await logAudit('delete', 'organization', before, null, { org_id: id, user_id });
+  return true;
+}

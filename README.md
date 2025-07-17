@@ -1,215 +1,107 @@
-# Ocular Clinic Hub
+# React
 
-A comprehensive management system for ocular clinics built with React, TypeScript, and PostgreSQL.
+A modern React-based project utilizing the latest frontend technologies and tools for building responsive web applications.
 
-## Project Structure
+## 🚀 Features
 
-- **Frontend**: React + TypeScript + Vite + shadcn/ui
-- **Backend**: Express.js + PostgreSQL
-- **Database**: PostgreSQL (local)
+- **React 18** - React version with improved rendering and concurrent features
+- **Vite** - Lightning-fast build tool and development server
+- **Redux Toolkit** - State management with simplified Redux setup
+- **TailwindCSS** - Utility-first CSS framework with extensive customization
+- **React Router v6** - Declarative routing for React applications
+- **Data Visualization** - Integrated D3.js and Recharts for powerful data visualization
+- **Form Management** - React Hook Form for efficient form handling
+- **Animation** - Framer Motion for smooth UI animations
+- **Testing** - Jest and React Testing Library setup
 
-## Quick Start
+## 📋 Prerequisites
 
-### 1. Database Setup
+- Node.js (v14.x or higher)
+- npm or yarn
 
-First, set up your PostgreSQL database:
+## 🛠️ Installation
+
+1. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
+   
+2. Start the development server:
+   ```bash
+   npm start
+   # or
+   yarn start
+   ```
+
+## 📁 Project Structure
+
+```
+react_app/
+├── public/             # Static assets
+├── src/
+│   ├── components/     # Reusable UI components
+│   ├── pages/          # Page components
+│   ├── styles/         # Global styles and Tailwind configuration
+│   ├── App.jsx         # Main application component
+│   ├── Routes.jsx      # Application routes
+│   └── index.jsx       # Application entry point
+├── .env                # Environment variables
+├── index.html          # HTML template
+├── package.json        # Project dependencies and scripts
+├── tailwind.config.js  # Tailwind CSS configuration
+└── vite.config.js      # Vite configuration
+```
+
+## 🧩 Adding Routes
+
+To add new routes to the application, update the `Routes.jsx` file:
+
+```jsx
+import { useRoutes } from "react-router-dom";
+import HomePage from "pages/HomePage";
+import AboutPage from "pages/AboutPage";
+
+const ProjectRoutes = () => {
+  let element = useRoutes([
+    { path: "/", element: <HomePage /> },
+    { path: "/about", element: <AboutPage /> },
+    // Add more routes as needed
+  ]);
+
+  return element;
+};
+```
+
+## 🎨 Styling
+
+This project uses Tailwind CSS for styling. The configuration includes:
+
+- Forms plugin for form styling
+- Typography plugin for text styling
+- Aspect ratio plugin for responsive elements
+- Container queries for component-specific responsive design
+- Fluid typography for responsive text
+- Animation utilities
+
+## 📱 Responsive Design
+
+The app is built with responsive design using Tailwind CSS breakpoints.
+
+
+## 📦 Deployment
+
+Build the application for production:
 
 ```bash
-# Create the database
-createdb visualDB
-
-# Run the schema
-psql -d visualDB -f backend/schema.sql
+npm run build
 ```
 
-### 2. Backend Setup
+## 🙏 Acknowledgments
 
-```bash
-# Install dependencies
-npm install
+- Built with [Rocket.new](https://rocket.new)
+- Powered by React and Vite
+- Styled with Tailwind CSS
 
-# Start the backend server
-npm run dev:backend
-```
-
-The backend will run on `http://localhost:3001`
-
-### 3. Frontend Setup
-
-```bash
-# In a new terminal, start the frontend
-npm run dev
-```
-
-The frontend will run on `http://localhost:5173`
-
-## Database Configuration
-
-The database connection is configured in `backend/postgres-client.ts`:
-
-```typescript
-export const pool = new Pool({
-  user: 'medlab',        // Your PostgreSQL username
-  host: 'localhost',
-  database: 'visualDB',
-  password: '592954',    // Update this to your password
-  port: 5432,            // Default PostgreSQL port
-  ssl: false,
-  connectionTimeoutMillis: 10000
-});
-```
-
-**Update these values** to match your PostgreSQL configuration.
-
-## Sample Login Credentials
-
-- **Admin**: `admin@clinic.com` / `admin123`
-- **Doctor**: `doctor@clinic.com` / `doctor123`
-
-## Available Scripts
-
-- `npm run dev` - Start frontend development server
-- `npm run dev:backend` - Start backend development server
-- `npm run build` - Build frontend for production
-- `npm run build:backend` - Build backend for production
-- `npm run start:backend` - Start production backend server
-
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/login` - User login
-- `POST /api/auth/register` - User registration
-
-### Patients
-- `GET /api/patients` - Get all patients
-- `POST /api/patients` - Create new patient
-- `PUT /api/patients/:id` - Update patient
-- `DELETE /api/patients/:id` - Delete patient
-
-### Appointments
-- `GET /api/appointments` - Get all appointments
-- `POST /api/appointments` - Create new appointment
-- `PUT /api/appointments/:id` - Update appointment
-
-### Inventory
-- `GET /api/inventory` - Get all inventory items
-- `PUT /api/inventory/:id` - Update inventory item
-
-### Orders
-- `GET /api/orders` - Get all orders
-- `PUT /api/orders/:id` - Update order
-
-## Features
-
-- **Patient Management**: Add, view, and manage patient records
-- **Appointment Scheduling**: Schedule and track appointments
-- **Employee Management**: Manage clinic staff
-- **Inventory Tracking**: Track medical supplies and equipment
-- **Financial Management**: Track revenue and expenses
-- **Payroll System**: Manage employee salaries
-- **Claims Processing**: Handle insurance claims
-
-## Technology Stack
-
-- **Frontend**: React, TypeScript, Vite, Tailwind CSS, shadcn/ui
-- **Backend**: Express.js, PostgreSQL, pg (PostgreSQL client)
-- **Authentication**: Session-based with localStorage
-- **State Management**: React Context API
-- **HTTP Client**: Fetch API
-
-## Migration from Supabase
-
-This project has been successfully migrated from Supabase to a local PostgreSQL database:
-
-✅ **Completed**:
-- Removed all Supabase dependencies
-- Created Express.js backend server
-- Updated all hooks to use new API client
-- Created PostgreSQL database schema
-- Updated authentication system
-- Added comprehensive API endpoints
-
-## Development
-
-For detailed backend setup instructions, see [backend/README.md](backend/README.md).
-
-## Troubleshooting
-
-1. **Database connection error**: Check PostgreSQL is running and credentials are correct
-2. **Port already in use**: Change the port in `server.ts` or kill the process using port 3001
-3. **CORS errors**: The server is configured to allow all origins in development
-4. **User not found**: Make sure you're using the correct PostgreSQL username (default: `medlab`)
-
-# Welcome to your Lovable project
-
-## Project info
-
-**URL**: https://lovable.dev/projects/9e7a87b1-d79b-4c06-84a0-a625c0af4329
-
-## How can I edit this code?
-
-There are several ways of editing your application.
-
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/9e7a87b1-d79b-4c06-84a0-a625c0af4329) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/9e7a87b1-d79b-4c06-84a0-a625c0af4329) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Built with ❤️ on Rocket.new

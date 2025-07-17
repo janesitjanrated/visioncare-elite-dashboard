@@ -1,0 +1,107 @@
+/* Font Configuration for Solo Optics Oasis */
+
+/* Base font settings */
+:root {
+  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-prompt: 'Prompt', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* English text - use Inter */
+.font-english {
+  font-family: var(--font-inter);
+}
+
+/* Thai text - use Prompt */
+.font-thai {
+  font-family: var(--font-prompt);
+}
+
+/* Headings - use Inter for English, Prompt for Thai */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-inter);
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+/* Thai headings */
+h1.thai, h2.thai, h3.thai, h4.thai, h5.thai, h6.thai {
+  font-family: var(--font-prompt);
+}
+
+/* Body text - responsive font selection */
+body {
+  font-family: var(--font-inter);
+}
+
+/* Thai body text */
+body.thai, .thai-text {
+  font-family: var(--font-prompt);
+}
+
+/* Form elements */
+input, textarea, select, button {
+  font-family: var(--font-inter);
+}
+
+/* Thai form elements */
+input.thai, textarea.thai, select.thai, button.thai {
+  font-family: var(--font-prompt);
+}
+
+/* Navigation and UI elements */
+nav, .nav-item, .sidebar, .header {
+  font-family: var(--font-inter);
+}
+
+/* Thai navigation */
+nav.thai, .nav-item.thai, .sidebar.thai, .header.thai {
+  font-family: var(--font-prompt);
+}
+
+/* Tables */
+table, th, td {
+  font-family: var(--font-inter);
+}
+
+/* Thai tables */
+table.thai, th.thai, td.thai {
+  font-family: var(--font-prompt);
+}
+
+/* Modal and overlay content */
+.modal, .overlay, .popup {
+  font-family: var(--font-inter);
+}
+
+/* Thai modal content */
+.modal.thai, .overlay.thai, .popup.thai {
+  font-family: var(--font-prompt);
+}
+
+/* Font weight utilities */
+.font-light {
+  font-weight: 300;
+}
+
+.font-normal {
+  font-weight: 400;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+/* Font smoothing for better rendering */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+} 
