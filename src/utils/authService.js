@@ -1,4 +1,5 @@
 import { supabase } from './supabase';
+import { apiClient } from './api';
 
 const DEMO_USERS = [
   {
@@ -21,6 +22,13 @@ const DEMO_USERS = [
     role: 'staff',
     id: 'demo-staff-1',
     name: 'Demo Staff'
+  },
+  {
+    email: 'admin@clinic.com',
+    password: 'admin123',
+    role: 'owner',
+    id: 'backend-admin-1',
+    name: 'Dr. Admin'
   }
 ];
 
@@ -57,6 +65,28 @@ const authService = {
         }
       };
     }
+
+    // Try backend API first
+    try {
+      const response = await apiClient.login({ email, password });
+      
+      if (response.token) {
+        localStorage.setItem('authToken', response.token);
+        localStorage.setItem('authUser', JSON.stringify(response.user));
+        
+        return {
+          success: true,
+          data: {
+            user: response.user,
+            session: { access_token: response.token }
+          }
+        };
+      }
+    } catch (backendError) {
+      console.log('Backend login failed, trying Supabase:', backendError.message);
+    }
+
+    // Fallback to Supabase
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -81,7 +111,7 @@ const authService = {
           error?.message?.includes('AuthRetryableFetchError')) {
         return { 
           success: false, 
-          error: 'Cannot connect to authentication service. Your Supabase project may be paused or inactive. Please check your Supabase dashboard and resume your project if needed.' 
+          error: 'Cannot connect to authentication service. Backend and Supabase are both unavailable.' 
         };
       }
       return { success: false, error: 'Something went wrong during login. Please try again.' };
